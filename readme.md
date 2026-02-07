@@ -1,7 +1,7 @@
-# Graph Foundation Library
+# GFMBenchmark
 
 ## 📖 Introduction
-**Graph Foundation Library** is a comprehensive codebase for Graph Foundation Models (GFMs). It simplifies pre-training, evaluation, and benchmarking across diverse graph domains.
+**GFMBenchmark** is a comprehensive codebase for Graph Foundation Models (GFMs). It simplifies pre-training, evaluation, and benchmarking across diverse graph domains.
 
 ## 🛠️ Installation
 
@@ -27,6 +27,7 @@ pip install -r requirements.txt
 You can prepare the data using **Cloud Downloads** (Recommended) or **Scripts**.
 
 ### 🔗 Cloud Resources (Download Links)
+**👉 Download Hub: [https://smu.sg/GFMBenchmark](https://smu.sg/GFMBenchmark)**
 | Resource | Description | Recommendation |
 | :--- | :--- | :--- |
 | **Lite Datasets** | Essential subset for quick testing | ✅ For Quick Start |
