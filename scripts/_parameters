@@ -1,0 +1,28 @@
+General settings for different datasets and models
+    node --lr 0.01 --batch_size 32768
+    edge --lr 0.01 --batch_size 32768
+    graph --lr 0.01 --batch_size 32768
+
+    ogbn-mag, product --batch_size 8192S
+
+mdgfm
+    graph --batch_size 8192
+
+    product downstream [5,5,5,5] --batch_size 4096
+    ogbn-mag --batch_size 2048
+
+graphclip
+    --batch_size 16384
+    hiv --batch_size 4096 
+    protein --batch_size 512
+    """
+    During test, a CUDA illegal memory access occurred in the GPSConv layers when 
+    processing a batch with extremely large variation in graph sizes (node counts from 4 to 620).
+
+    GPSConv uses multi-head attention internally, which crashes on GPU when the node count disparity in a batch is too high.
+    """
+
+gcn/gat
+    ogbn-proteins --input_dim 50 (have to use pca)
+    ogbn-mag, product --batch_size 1024/512 gcn/gat
+        except product gat(5 shot) --batch_size 128

@@ -1,0 +1,1 @@
+from GraphCLIP.model.graphclip import GraphCLIP
