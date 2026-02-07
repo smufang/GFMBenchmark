@@ -1,5 +1,4 @@
 # python 3.10
-# for GCN, GAT, SIMPLE-HGN, Heco, TGN, DDGCL, MDGPT, MDGFM, SAMGPT, GCOPE, GraphCLIP, G2P2
 
 torch==2.5.1
 torchvision==0.20.1
