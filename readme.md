@@ -24,7 +24,7 @@ pip install -r requirements.txt
 
 ## 💾 Data Preparation
 
-You can prepare the data using **Cloud Downloads** (Recommended) or **Scripts**.
+You can prepare the data using **Full Cloud Downloads** or **Lite Downloads + Scripts**.
 
 ### 🔗 Cloud Resources (Download Links)
 **👉 Download Hub: [https://smu.sg/GFMBenchmark](https://smu.sg/GFMBenchmark)**
