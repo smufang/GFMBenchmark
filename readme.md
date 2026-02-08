@@ -35,7 +35,7 @@ You can prepare the data using **Full Cloud Downloads** or **Lite Downloads + Sc
 | **Full Bundle** | All datasets + Pre-processed files | For Reproduction |
 | **Checkpoints** | Pre-trained model weights | For Evaluation |
 
-> **Note**: Generating GCOPE `induced_graph` and GraphCLIP summaries locally is time-consuming. We strongly suggest downloading the **Pre-processed Files** directly instead of generating them by yourself.
+> **Note**: Generating GCOPE `induced_graph` and GraphCLIP summaries locally is time/memory-consuming. We strongly suggest downloading the **Pre-processed Files** directly instead of generating them by code.
 
 ### Option A: Automatic Script (Raw Data Only)
 To download the standard raw datasets automatically:
