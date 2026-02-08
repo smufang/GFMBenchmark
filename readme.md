@@ -66,5 +66,11 @@ bash scripts/samgpt_downstream.sh
 
 Modify the scripts to adjust parameters such as `TASK_NAMES`, `model_id`, or `exp_id` as needed.
 
+### 🔧 Dataset Configuration
+
+You can adjust the datasets in `data_provider/__init__.py` according to different models:
+- **Single Domain Pre-training**: For single-domain pre-training models, please comment out unrelated datasets in the dictionary.
+- **Dataset Compatibility**: Some datasets marked with `### No label name ###` do not have label names and **do not support** downstream tasks for **GraphCLIP** and **G2P2**.
+
 ### ⚡ Batch Size Configuration
 For optimal performance and to avoid OOM errors, refer to `scripts/_parameters`. 
