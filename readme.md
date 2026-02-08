@@ -26,16 +26,16 @@ pip install -r requirements.txt
 
 You can prepare the data using **Full Cloud Downloads** or **Lite Downloads + Scripts**.
 
-### 🔗 Cloud Resources (Download Links)
+### 🔗 Cloud Resources
 **👉 Download Hub: [https://smu.sg/GFMBenchmark](https://smu.sg/GFMBenchmark)**
 | Resource | Description | Recommendation |
 | :--- | :--- | :--- |
 | **Lite Datasets** | Essential subset for quick testing | ✅ For Quick Start |
-| **Pre-processed Files** | Includes **GCOPE** `induced_graph` & **GraphCLIP** `subgraph summary` | ⭐ **Highly Recommended** |
+| **Pre-processed Files** | Includes **GCOPE** `induced_graph` & **GraphCLIP** `subgraph summary` | **Highly Recommended** |
 | **Full Bundle** | All datasets + Pre-processed files | For Reproduction |
 | **Checkpoints** | Pre-trained model weights | For Evaluation |
 
-> **Note**: Generating GCOPE `induced_graph` and GraphCLIP summaries locally is time-consuming. We strongly suggest downloading the **Pre-processed Files** directly.
+> **Note**: Generating GCOPE `induced_graph` and GraphCLIP summaries locally is time-consuming. We strongly suggest downloading the **Pre-processed Files** directly instead of generating them by yourself.
 
 ### Option A: Automatic Script (Raw Data Only)
 To download the standard raw datasets automatically:
