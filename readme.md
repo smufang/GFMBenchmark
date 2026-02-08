@@ -30,8 +30,8 @@ You can prepare the data using **Full Cloud Downloads** or **Lite Downloads + Sc
 **👉 Download Hub: [https://smu.sg/GFMBenchmark](https://smu.sg/GFMBenchmark)**
 | Resource | Description | Recommendation |
 | :--- | :--- | :--- |
-| **Lite Datasets** | Essential subset for quick testing | ✅ For Quick Start |
-| **Pre-processed Files** | Includes **GCOPE** `induced_graph` & **GraphCLIP** `subgraph summary` | **Highly Recommended** |
+| **Lite Datasets** | Essential subset for quick testing | For Quick Start |
+| **Pre-processed Files** | Includes **GCOPE** `induced_graph` & **GraphCLIP** `subgraph summary` | Highly Recommended |
 | **Full Bundle** | All datasets + Pre-processed files | For Reproduction |
 | **Checkpoints** | Pre-trained model weights | For Evaluation |
 
