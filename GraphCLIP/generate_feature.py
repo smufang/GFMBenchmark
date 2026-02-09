@@ -1,5 +1,5 @@
 import sys
-sys.path.append("/home/shenghua/Graph-Foundation-Library")
+sys.path.append("/GFM") # your project root directory
 
 import os
 import torch
