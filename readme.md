@@ -44,10 +44,18 @@ bash scripts/data_download.sh
 ```
 
 ### Option B: Data Splits Generation
-After downloading datasets (via Cloud or Script), generate the few-shot splits required for downstream tasks:
+Data splits can be obtained via **Cloud Downloads** or generated using **Scripts**.
+
+#### 1. General Usage
+If not using the pre-processed splits from the cloud, generate them locally:
 ```bash
 bash scripts/fewshot_generate.sh
 ```
+
+#### 2. Special Handling (DGraph & Elliptic)
+Due to diverse label classifications, manual adjustments are required for `DGraph` and `Elliptic`:
+- **Cloud Downloads**: You may need to rename the files in `datasets_split/` manually. For instance, rename `datasets_split/DGraph/split/split_node2way_0.pt` to `datasets_split/DGraph/split/split_node_0.pt` (removing `2way`) to ensure automatic recognition. The same logic applies to `datasets_split/DGraph/few-shot/` (e.g., converting `node2way-0` format).
+- **Script Generation**: Modify the corresponding function in `data_provider/data_generator.py`. Set the label mask to `-1` for labels that do not need evaluation.
 
 ---
 
