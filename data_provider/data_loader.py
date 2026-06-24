@@ -55,7 +55,11 @@ def complete_data(data: Data, name, need_y=False, need_token_cache=False) -> Dat
     - token_cache    Tensor([num_nodes, num_features])         (only for need_token_cache=True)
     """
     new_data = Data()
-    new_data.x = torch.nan_to_num(data.x, nan=0.0, posinf=0.0, neginf=0.0)
+    sparse_layouts = {torch.sparse_coo, torch.sparse_csr}
+    if data.x.layout in sparse_layouts:
+        new_data.x = data.x
+    else:
+        new_data.x = torch.nan_to_num(data.x, nan=0.0, posinf=0.0, neginf=0.0)
     new_data.edge_index = data.edge_index
     new_data.name = name
     if getattr(data, "edge_type", None) is None:
@@ -473,6 +477,8 @@ def general_loader(
                 input_nodes.extend((sub_data.input_nodes + cum_nodes).tolist())
                 cum_nodes += sub_data.num_nodes
             data.input_nodes = torch.tensor(input_nodes, dtype=torch.long)
+        # print(f"Loaded a batch of {len(data_list)} graphs with total {data.num_nodes} nodes and {data.num_edges} edges.")
+        # print(f"Graph names in this batch: {set(data.name)}")
         yield data
 
 
@@ -522,7 +528,7 @@ if __name__ == "__main__":
     from utils.compress_func import compress_pca
 
     compressed_data_ = get_compressed_data(pretrain, compress_fc=compress_pca, k=50)
-    pretrain_loader = pretrain_loader(
+    pretrainloader = pretrain_loader(
         pretrain,
         max_nodes=80000,
         compress_fc=compress_pca,
@@ -531,7 +537,7 @@ if __name__ == "__main__":
     )
     for i in range(10):
         count = 0
-        for batch in pretrain_loader:
+        for batch in pretrainloader:
             count += 1
             print(batch)
             print(set(batch.name))

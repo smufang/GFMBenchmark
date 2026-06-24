@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 from typing import Any, Union, List
 from G2P2.simple_tokenizer import SimpleTokenizer as _Tokenizer
-from torch_geometric.nn.conv import MessagePassing
+from torch_geometric.nn.conv import FAConv, MessagePassing
 from torch_scatter import scatter_add
 from torch_geometric.utils import add_remaining_self_loops
 from torch import nn, optim
@@ -114,6 +114,35 @@ class GNN(MessagePassing):
         return self.vars
 
 
+class FAGNN(nn.Module):
+    def __init__(self, args):
+        super().__init__()
+        self.input_proj = nn.Linear(args.gnn_input, args.gnn_hid)
+        self.convs = nn.ModuleList([
+            FAConv(args.gnn_hid, eps=0.1)
+            for _ in range(args.num_layers)
+        ])
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        nn.init.xavier_uniform_(self.input_proj.weight)
+        nn.init.zeros_(self.input_proj.bias)
+        for conv in self.convs:
+            nn.init.xavier_uniform_(conv.att_l.weight)
+            nn.init.xavier_uniform_(conv.att_r.weight)
+
+    def forward(self, x, edge_index):
+        x = self.input_proj(x)
+        x_0 = x
+
+        for i, conv in enumerate(self.convs):
+            x = conv(x, x_0, edge_index)
+            if i < len(self.convs) - 1:
+                x = F.leaky_relu(x)
+
+        return x
+
+
 class CLIP(nn.Module):
     def __init__(self,
                  args
@@ -124,7 +153,15 @@ class CLIP(nn.Module):
         self.args = args
         self.edge_coef = args.edge_coef
 
-        self.gnn = GNN(args)
+        if args.backbone == 'gcn':
+            self.gnn = GNN(args)
+        elif args.backbone == 'fagcn':
+            if args.gnn_hid != args.gnn_output:
+                raise ValueError("FAGCN backbone requires gnn_hid == gnn_output.")
+            self.gnn = FAGNN(args)
+        else:
+            raise ValueError(f"Unsupported backbone: {args.backbone}")
+        
         self.transformer = Transformer(
             width=args.transformer_width,
             layers=args.transformer_layers,
@@ -141,7 +178,8 @@ class CLIP(nn.Module):
         self.text_projection = nn.Parameter(torch.empty(args.transformer_width, args.embed_dim))
         self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
 
-        self.dtype = self.gnn.vars[0].dtype
+        # self.dtype = self.gnn.vars[0].dtype
+        self.dtype = next(iter(self.gnn.parameters())).dtype
 
         self.optim = optim.Adam([{'params': self.token_embedding.weight},
                                  {'params': self.positional_embedding},

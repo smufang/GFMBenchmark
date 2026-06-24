@@ -22,7 +22,8 @@ def train(data_loader, epoch):
         optimizer.zero_grad()
         model.train()
 
-        model.graph_model.redraw_projection.redraw_projections()
+        if hasattr(model.graph_model, "redraw_projection"):
+            model.graph_model.redraw_projection.redraw_projections()
         summaries = [g.summary for g in batch]
         batch_t = tokenizer(summaries, truncation=True, padding=True, return_tensors="pt", max_length=512)
         # DP codes
@@ -52,19 +53,29 @@ def train(data_loader, epoch):
 if __name__ == "__main__":
     args = Arguments().parse_args()
     args.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    pretrain_exps = {
-        "exp1": pretrain,
-        "exp2": pretrain,
-        "exp3": pretrain_exp3,
-        "exp4": pretrain_exp4,
-    }
+    pretrain_exps = {'exp1': pretrain, 
+                     'exp2': pretrain, 
+                     'exp3cite': pretrain_exp3_cite, 
+                     'exp3social': pretrain_exp3_social,
+                     'exp3molecule': pretrain_exp3_molecule,
+                     'exp4': pretrain_exp4, 
+                     'exp0': pretrain_exp0,
+                     'none': None}
     pretrain_dict = pretrain_exps[args.model_id]
     exp = ExpPretrainGraphCLIP(args, pretrain_dict)
     os.makedirs(exp.save_path, exist_ok=True)
 
     attn_kwargs = {'dropout': 0.0}
     text_model = args.lm_type
-    model = GraphCLIP(args.input_dim, args.hidden_dim, 12, attn_kwargs, text_model=text_model)
+    model = GraphCLIP(
+        args.input_dim,
+        args.hidden_dim,
+        12,
+        attn_kwargs,
+        text_model=text_model,
+        backbone=args.backbone,
+        graph_output_dim=args.output_dim,
+    )
 
     # freeze text model
     model.freeze_text()

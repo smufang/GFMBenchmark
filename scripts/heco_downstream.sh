@@ -1,17 +1,17 @@
 #!/bin/bash
 
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=3
 export CUDA_LAUNCH_BLOCKING=1
 export PYTHONUNBUFFERED=1
 #export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 MODEL="heco"
 TASK_NAMES=("node")  # ("node" "edge" "graph")
-NUM_SHOTS=(1 5)         # 5
+NUM_SHOTS=(1)         # 5
 SEEDS=(0)
 COMMON_ARGS="--model ${MODEL} \
-    --model_id exp2 \
-    --exp_id exp2 \
+    --model_id ACM \
+    --exp_id ACM \
     --pattern single \
     --preprocess simple \
     --mode none \
@@ -35,9 +35,10 @@ COMMON_ARGS="--model ${MODEL} \
     --num_tasks 50"
 
 mkdir -p logs/${MODEL}
+mkdir -p pids
 timestamp=$(date +"%Y%m%d_%H%M%S")
 LOGFILE=logs/${MODEL}/${MODEL}_downstream_${timestamp}.log
-PID_FILE=${MODEL}_downstream_${timestamp}.pid
+PID_FILE=pids/${MODEL}_downstream_${timestamp}.pid
 echo "=== ${MODEL^^} Downstream Tasks Started ===" > $LOGFILE
 echo "GPU: ${CUDA_VISIBLE_DEVICES}" >> $LOGFILE
 : > $PID_FILE

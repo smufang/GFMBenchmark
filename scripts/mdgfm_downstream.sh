@@ -6,19 +6,19 @@ export PYTHONUNBUFFERED=1
 #export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 MODEL="mdgfm"
-TASK_NAMES=("graph")  # ("node" "edge" "graph")
-NUM_SHOTS=(1 5)         # 5
+TASK_NAMES=("node")  # ("node" "edge" "graph")
+NUM_SHOTS=(5)         # 5
 SEEDS=(0)
 COMMON_ARGS="--model ${MODEL} \
-    --model_id exp1 \
-    --exp_id exp2 \
+    --model_id exp4 \
+    --exp_id exp4 \
     --pattern cross \
     --mode lp \
-    --backbone gcn \
+    --backbone fagcn \
     --use_gpu True \
     --devices 0 \
     --gpu_type cuda \
-    --batch_size 8192 \
+    --batch_size 2048 \
     --num_workers 4 \
     --learning_rate 0.01 \
     --epochs 400 \
@@ -39,9 +39,10 @@ COMMON_ARGS="--model ${MODEL} \
     --num_tasks 50"
 
 mkdir -p logs/${MODEL}
+mkdir -p pids
 timestamp=$(date +"%Y%m%d_%H%M%S")
 LOGFILE=logs/${MODEL}/${MODEL}_downstream_${timestamp}.log
-PID_FILE=${MODEL}_downstream_${timestamp}.pid
+PID_FILE=pids/${MODEL}_downstream_${timestamp}.pid
 echo "=== ${MODEL^^} Downstream Tasks Started ===" > $LOGFILE
 echo "GPU: ${CUDA_VISIBLE_DEVICES}" >> $LOGFILE
 : > $PID_FILE

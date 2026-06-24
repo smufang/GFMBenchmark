@@ -8,7 +8,7 @@ MODEL="heco"
 TASK="pretrain"
 SEEDS=(0)
 COMMON_ARGS="--model ${MODEL} \
-    --model_id exp2 \
+    --model_id ACM \
     --task_name ${TASK} \
     --pattern single \
     --preprocess simple \
@@ -34,9 +34,10 @@ NUM_GPUS=1
 PORT=$(shuf -i 29500-65535 -n 1)
 
 mkdir -p logs/${MODEL}
+mkdir -p pids
 timestamp=$(date +"%Y%m%d_%H%M%S")
 LOGFILE=logs/${MODEL}/${MODEL}_${TASK}_${timestamp}.log
-PID_FILE=${MODEL}_${TASK}_${timestamp}.pid
+PID_FILE=pids/${MODEL}_${TASK}_${timestamp}.pid
 : > $PID_FILE
 
 echo "=== ${MODEL^^} Pretraining Started ===" > $LOGFILE

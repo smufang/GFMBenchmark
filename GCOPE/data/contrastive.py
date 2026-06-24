@@ -18,7 +18,16 @@ def get_clustered_data(dataset, cache_dir, cross_link, cl_init_method='learnable
 
     if 'pretrain' in dataset:
         from data_provider.data_loader import get_original_data
-        pretrain_exps = {'exp1': pretrain, 'exp2': pretrain, 'exp3': pretrain_exp3, 'exp4': pretrain_exp4}
+        pretrain_exps = {
+            'exp1': pretrain, 
+            'exp2': pretrain, 
+            'exp3cite': pretrain_exp3_cite, 
+            'exp3social': pretrain_exp3_social,
+            'exp3molecule': pretrain_exp3_molecule,
+            'exp4': pretrain_exp4, 
+            'exp0': pretrain_exp0,
+            'none': None
+        }
         pretrain_dict = pretrain_exps[model_id]
         dataset_dict = get_original_data(pretrain_dict)
         dataset_lst = dataset_dict.values()

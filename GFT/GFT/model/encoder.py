@@ -5,12 +5,70 @@ from torch import Tensor
 import torch.nn as nn
 from torch.nn import LSTM
 import torch.nn.functional as F
-
+from torch_geometric.nn.conv import FAConv
 from torch_geometric.nn import MessagePassing, SAGEConv, GATConv, GCNConv, GINConv
 from torch_geometric.nn.aggr import Aggregation, MultiAggregation
 from torch_geometric.nn.dense.linear import Linear
 from torch_geometric.typing import Adj, OptPairTensor, Size, SparseTensor
 from torch_geometric.utils import spmm
+
+
+class FALayers(nn.Module):
+    def __init__(self, input_dim, hidden_dim, num_layers=2, dropout=0.1, epsilon=0.1,
+                 activation="relu", normalize=True, add_self_loops=True, cached=False):
+        super(FALayers, self).__init__()
+        self.num_layers = num_layers
+        self.dropout = nn.Dropout(dropout)
+
+        if activation == "relu":
+            self.act_fn = F.relu
+        elif activation == "gelu":
+            self.act_fn = F.gelu
+        elif activation == "elu":
+            self.act_fn = F.elu
+        elif activation == "none":
+            self.act_fn = nn.Identity()
+        else:
+            self.act_fn = F.relu  # default
+
+        self.input_proj = nn.Linear(input_dim, hidden_dim)
+        self.convs = nn.ModuleList()
+        self.bns = nn.ModuleList()
+
+        for _ in range(num_layers):
+            self.convs.append(FAConv(hidden_dim, eps=epsilon, dropout=0.0,
+                                     cached=cached, add_self_loops=add_self_loops,
+                                     normalize=normalize))
+            self.bns.append(nn.BatchNorm1d(hidden_dim))
+
+        self.init_weights()
+
+    def init_weights(self):
+        nn.init.xavier_uniform_(self.input_proj.weight)
+        if self.input_proj.bias is not None:
+            self.input_proj.bias.data.fill_(0.0)
+    
+    def reset_parameters(self):
+        self.init_weights()
+        for conv in self.convs:
+            conv.reset_parameters()
+        for bn in self.bns:
+            bn.reset_parameters()
+
+    def forward(self, x, edge_index, LP=False, prompt_layers=None, name=None):
+        if prompt_layers:
+            assert len(prompt_layers) == self.num_layers
+        h = self.input_proj(x)
+        h = self.act_fn(h)
+        raw = h
+        for i in range(self.num_layers):
+            h = self.convs[i](h, raw, edge_index)
+            if prompt_layers:
+                h = prompt_layers[i](h, name)
+            if LP:
+                h = self.bns[i](h)
+                h = self.dropout(h)
+        return h
 
 
 class MySAGEConv(MessagePassing):
@@ -105,7 +163,7 @@ class MySAGEConv(MessagePassing):
 
 class Encoder(nn.Module):
     def __init__(self, input_dim, hidden_dim,
-                 activation, num_layers, backbone='sage',
+                 activation, num_layers, backbone='fagcn',
                  normalize='none', dropout=0.0):
         super(Encoder, self).__init__()
 
@@ -123,6 +181,8 @@ class Encoder(nn.Module):
         dims = [input_dim] + [hidden_dim] * num_layers
 
         for in_dim, out_dim in zip(dims[:-1], dims[1:]):
+            if backbone == 'fagcn':
+                self.layers.append(FALayers(in_dim, out_dim))
             if backbone == 'sage':
                 self.layers.append(MySAGEConv(in_dim, out_dim, aggr='mean', normalize=False, root_weight=True))
             elif backbone == 'gat':
@@ -147,7 +207,10 @@ class Encoder(nn.Module):
         z = x
 
         for i, conv in enumerate(self.layers):
-            z = conv(z, edge_index, edge_attr)
+            if self.backbone == 'fagcn':
+                z = conv(z, edge_index)
+            else:
+                z = conv(z, edge_index, edge_attr)
             if self.normalize != 'none':
                 z = self.norms[i](z)
             if i < self.num_layers - 1:

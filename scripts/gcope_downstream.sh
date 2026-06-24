@@ -1,14 +1,14 @@
 #!/bin/bash
 
-export CUDA_VISIBLE_DEVICES=1
+export CUDA_VISIBLE_DEVICES=3
 export CUDA_LAUNCH_BLOCKING=1
 export PYTHONUNBUFFERED=1
 
 MODEL="gcope"
-backbone="fagcn"
+backbone="gcn"
 source_dataset_str="pretrain"
-MODEL_ID="exp3"
-EXP_ID="exp3"
+MODEL_ID="exp4"
+EXP_ID="exp4"
 
 TASK_NAMES=("graph")  # ("node" "edge" "graph")
 NUM_SHOTS=(1 5)         # 5
@@ -20,7 +20,6 @@ COMMON_ARGS="
     --general.save_dir GCOPE/storage/${backbone}/balanced_few_shot_fine_tune_backbone_with_rec \
     --general.reconstruct 0.0 \
     --data.node_feature_dim 100 \
-    --adapt.method finetune \
     --model.backbone.model_type ${backbone} \
     --model.saliency.model_type none \
     --adapt.method finetune \
@@ -32,9 +31,10 @@ COMMON_ARGS="
 "
 
 mkdir -p logs/${MODEL}
+mkdir -p pids
 timestamp=$(date +"%Y%m%d_%H%M%S")
 LOGFILE=logs/${MODEL}/${MODEL}_downstream_${timestamp}.log
-PID_FILE=${MODEL}_downstream_${timestamp}.pid
+PID_FILE=pids/${MODEL}_downstream_${timestamp}.pid
 echo "=== ${MODEL^^} Downstream Tasks Started ===" > $LOGFILE
 echo "GPU: ${CUDA_VISIBLE_DEVICES}" >> $LOGFILE
 : > $PID_FILE

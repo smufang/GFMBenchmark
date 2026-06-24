@@ -6,7 +6,7 @@ from torch_geometric.utils import subgraph
 
 class SubgraphBatchDataset(Dataset):
     def __init__(self, data, graph_label_index=None, graph_label=None, batch_size=1024,
-                 shuffle=False, drop_last=False):
+                 shuffle=False, drop_last=False, need_input_nodes=False):
         """
         Dataset for sampling subgraphs from a large batched graph.
 
@@ -19,12 +19,14 @@ class SubgraphBatchDataset(Dataset):
         - Supports shuffle, drop_last, and replacement (infinite sampling) modes.
         - Returns subgraphs as PyG Data objects with 'graph_label' and 'graph_label_index'.
         - If `graph_label` is None, `batch.graph_label` will be None.
+        - If `need_input_nodes` is True, all real nodes are exposed through
+          `input_nodes`, and `input_batch` groups them by constituent graph.
         """
         self.data = data
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.drop_last = drop_last
-
+        self.need_input_nodes = need_input_nodes
         if not hasattr(self.data, "batch"):
             raise ValueError("The input `data` must have a `batch` attribute.")
 
@@ -52,6 +54,7 @@ class SubgraphBatchDataset(Dataset):
                 break
             self.batches.append(indices[i:end_idx])
 
+        self.node_type = getattr(self.data, "node_type", None)
         self.edge_type = getattr(self.data, "edge_type", None)
         self.edge_attr = getattr(self.data, "edge_attr", None)
         self.raw_texts = getattr(self.data, "raw_texts", None)
@@ -72,32 +75,48 @@ class SubgraphBatchDataset(Dataset):
         if node_idx.numel() == 0:
             return None
 
-        edge_index, _ = subgraph(node_idx, data.edge_index, relabel_nodes=True, num_nodes=data.num_nodes)
+        edge_index, _, edge_mask = subgraph(
+            node_idx,
+            data.edge_index,
+            relabel_nodes=True,
+            num_nodes=data.num_nodes,
+            return_edge_mask=True,
+        )
 
         batch = Data(
             x=data.x[node_idx],
             edge_index=edge_index,
             batch=data.batch[node_idx],
-            edge_type=self.edge_type[node_idx] if self.edge_type is not None else None,
-            edge_attr=self.edge_attr[node_idx] if self.edge_attr is not None else None,
+            node_type=self.node_type[node_idx] if self.node_type is not None else None,
+            edge_type=self.edge_type[edge_mask] if self.edge_type is not None else None,
+            edge_attr=self.edge_attr[edge_mask] if self.edge_attr is not None else None,
             raw_texts=[self.raw_texts[i] for i in node_idx] if self.raw_texts is not None else None,
             relation_texts=self.relation_texts,
             token_cache=self.token_cache[node_idx] if self.token_cache is not None else None,
             graph_label=batch_labels,
-            graph_label_index=batch_ids
+            graph_label_index=batch_ids,
         )
+        if self.need_input_nodes:
+            batch.input_nodes = torch.arange(batch.num_nodes, dtype=torch.long)
+            _, batch.input_batch = torch.unique(
+                batch.batch,
+                sorted=True,
+                return_inverse=True,
+            )
+
         return batch
 
 
 def BatchGraphLoader(data, graph_label_index=None, graph_label=None,
-                     batch_size=32, shuffle=False, drop_last=False, num_workers=0):
+                     batch_size=32, shuffle=False, drop_last=False, num_workers=0, need_input_nodes=False):
     dataset = SubgraphBatchDataset(
         data,
         graph_label_index=graph_label_index,
         graph_label=graph_label,
         batch_size=batch_size,
         shuffle=shuffle,
-        drop_last=drop_last
+        drop_last=drop_last,
+        need_input_nodes=need_input_nodes
     )
     loader = DataLoader(dataset, batch_size=None, num_workers=num_workers, persistent_workers=False)
     return loader

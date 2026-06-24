@@ -8,16 +8,16 @@ MODEL="samgpt"
 TASK="pretrain"
 SEEDS=(0)
 COMMON_ARGS="--model ${MODEL} \
-    --model_id exp1 \
+    --model_id exp4 \
     --task_name ${TASK} \
     --pattern cross \
     --mode gcl \
-    --backbone gcn \
+    --backbone fagcn \
     --use_gpu True \
     --devices 0 \
     --gpu_type cuda \
     --num_neighbors 10 10 10 10 \
-    --max_nodes 120000 \
+    --max_nodes 100000 \
     --batch_size 1024 \
     --num_workers 1 \
     --learning_rate 0.001 \
@@ -37,15 +37,17 @@ COMMON_ARGS="--model ${MODEL} \
     --aug_type edge \
     --drop_percent 0.1 \
     --num_neg_samples 50 \
+    --continue_train True \
     --is_logging True"
 
 NUM_GPUS=1
 PORT=$(shuf -i 29500-65535 -n 1)
 
 mkdir -p logs/${MODEL}
+mkdir -p pids
 timestamp=$(date +"%Y%m%d_%H%M%S")
 LOGFILE=logs/${MODEL}/${MODEL}_${TASK}_${timestamp}.log
-PID_FILE=${MODEL}_${TASK}_${timestamp}.pid
+PID_FILE=pids/${MODEL}_${TASK}_${timestamp}.pid
 : > $PID_FILE
 
 echo "=== ${MODEL^^} Pretraining Started ===" > $LOGFILE

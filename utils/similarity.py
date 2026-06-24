@@ -15,3 +15,4 @@ def cosine_similarity(emb1: torch.Tensor, emb2: torch.Tensor, temperature: float
     sim_matrix = torch.clamp(sim_matrix, min=-1.0 + eps, max=1.0 - eps)
 
     return sim_matrix 
+

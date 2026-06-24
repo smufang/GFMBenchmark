@@ -70,7 +70,15 @@ def prompt_tuning(exp, loader, prompt, num_labels, is_train, device):
 def main(args, pretrain_dict, name, dataset):
     exp = ExpDownstreamBatchGraphCLIP(args, pretrain_dict, name, dataset)
     attn_kwargs = {'dropout': 0.0}
-    model = GraphCLIP(args.input_dim, args.hidden_dim, 12, attn_kwargs, text_model=args.lm_type)
+    model = GraphCLIP(
+        args.input_dim,
+        args.hidden_dim,
+        12,
+        attn_kwargs,
+        text_model=args.lm_type,
+        backbone=args.backbone,
+        graph_output_dim=args.output_dim,
+    )
     model.freeze_text()
     model.freeze_graph()
     exp.pretrain_model = exp._get_pretrain_model(model, strict=False)
@@ -218,12 +226,14 @@ if __name__ == "__main__":
     from data_provider import *
     args = Arguments().parse_args()
     args.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    pretrain_exps = {
-        "exp1": pretrain,
-        "exp2": pretrain,
-        "exp3": pretrain_exp3,
-        "exp4": pretrain_exp4,
-    }
+    pretrain_exps = {'exp1': pretrain, 
+                     'exp2': pretrain, 
+                     'exp3cite': pretrain_exp3_cite, 
+                     'exp3social': pretrain_exp3_social,
+                     'exp3molecule': pretrain_exp3_molecule,
+                     'exp4': pretrain_exp4, 
+                     'exp0': pretrain_exp0,
+                     'none': None}
     pretrain_dict = pretrain_exps[args.model_id]
 
     exps = {

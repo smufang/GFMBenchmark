@@ -29,6 +29,8 @@ class Pretrain(nn.Module):
         elif backbone == 'gat':
             self.gnn_enc = GATLayers(input_dim, hidden_dim, num_layers, num_heads=num_heads, concat=True, bias=True,
                                      dropout=dropout, activation=activation)
+        elif backbone == 'fagcn':
+            self.gnn_enc = FALayers(input_dim, hidden_dim, num_layers, epsilon=0.1, dropout=dropout, activation=activation)
 
         self.lp = LpGPT()
         self.graphcl = GraphCLGPT(hidden_dim, sim='bil')

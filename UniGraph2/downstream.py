@@ -16,6 +16,7 @@ from torchmetrics import Accuracy
 from utils.subbatch_loader import BatchGraphLoader
 from sklearn.metrics import f1_score
 from models.unigraph2 import UniGraph2
+from models.unigraph2_fagcn import UniGraph2 as UniGraph2FAGCN
 from utils.format_trans import temporal_to_data, hetero_to_data, multi_to_one
 from utils import compress_func
 from utils.utils import create_x, complete_data
@@ -170,12 +171,13 @@ def get_loader(params, data, task_labels, task_ids, is_train):
             yield batch, batch.graph_label, batch.graph_label_index
 
 
-def get_unigraph2_encoder(ckpt_path: str, in_dim_text: int, hidden_dim: int, device: torch.device):
+def get_unigraph2_encoder(ckpt_path: str, in_dim_text: int, hidden_dim: int, device: torch.device, exp: int = 1):
     input_dims = {
         "text": in_dim_text,
     }
 
-    model = UniGraph2(
+    ModelClass = UniGraph2FAGCN if exp == 5 else UniGraph2
+    model = ModelClass(
         input_dims=input_dims,
         hidden_dim=hidden_dim,
         num_experts=8,
@@ -391,7 +393,7 @@ def main(params):
         macrof_lst = []
         microf_lst = []
         for idx, train_task in enumerate(fewshot_tasks, start=1):
-            encoder = get_unigraph2_encoder(ckpt_path, params['input_dim'], params['hidden_dim'], device=device)
+            encoder = get_unigraph2_encoder(ckpt_path, params['input_dim'], params['hidden_dim'], device=device, exp=params['exp'])
             
             task_time_start = time.time()
             proto_emb, proto_classes = run_model_graph(encoder, full_data, train_task, params, is_train=True, proto_emb=None, proto_classes=None, is_batch=is_batch)

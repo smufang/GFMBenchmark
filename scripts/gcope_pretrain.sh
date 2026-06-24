@@ -4,12 +4,13 @@ export CUDA_VISIBLE_DEVICES=1
 export CUDA_LAUNCH_BLOCKING=1
 export PYTHONUNBUFFERED=1
 
-backbone="fagcn"
-MODEL_ID="exp3"
+backbone="gcn"
+MODEL_ID="exp4"
 # target='Citeseer'  
 
-mkdir -p GCOPE/storage/${backbone}/reconstruct_${EXP}
+mkdir -p GCOPE/storage/${backbone}/reconstruct_${MODEL_ID}
 mkdir -p logs/gcope
+mkdir -p pids
 timestamp=$(date +"%Y%m%d_%H%M%S")
 LOGFILE=logs/gcope/gcope_pretrain_${timestamp}.log
 
@@ -25,10 +26,11 @@ nohup python GCOPE/exec.py \
     --general.func pretrain \
     --general.save_dir "GCOPE/storage/${backbone}/reconstruct_${MODEL_ID}/" \
     --general.reconstruct 0.2 \
+    --model.backbone.model_type "${backbone}" \
     --data.name "pretrain" \
     >> $LOGFILE 2>&1 &
 
-echo $! > gcope_pretrain_${timestamp}.pid
+echo $! > pids/gcope_pretrain_${timestamp}.pid
 echo "You can view real-time logs with: tail -f $LOGFILE" | tee -a $LOGFILE
-echo "To check if the process is running, use: ps -p \$(cat gcope_pretrain_${timestamp}.pid) | xargs" | tee -a $LOGFILE
-echo "To stop the process, use: kill \$(cat gcope_pretrain_${timestamp}.pid)" | tee -a $LOGFILE
+echo "To check if the process is running, use: ps -p \$(cat pids/gcope_pretrain_${timestamp}.pid) | xargs" | tee -a $LOGFILE
+echo "To stop the process, use: kill \$(cat pids/gcope_pretrain_${timestamp}.pid)" | tee -a $LOGFILE

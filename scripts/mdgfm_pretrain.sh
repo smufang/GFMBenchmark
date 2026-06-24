@@ -8,11 +8,11 @@ MODEL="mdgfm"
 TASK="pretrain"
 SEEDS=(0)
 COMMON_ARGS="--model ${MODEL} \
-    --model_id exp1 \
+    --model_id exp4 \
     --task_name ${TASK} \
     --pattern cross \
     --mode lp \
-    --backbone gcn \
+    --backbone fagcn \
     --use_gpu True \
     --devices 0 \
     --gpu_type cuda \
@@ -41,9 +41,10 @@ NUM_GPUS=1
 PORT=$(shuf -i 29500-65535 -n 1)
 
 mkdir -p logs/${MODEL}
+mkdir -p pids
 timestamp=$(date +"%Y%m%d_%H%M%S")
 LOGFILE=logs/${MODEL}/${MODEL}_${TASK}_${timestamp}.log
-PID_FILE=${MODEL}_${TASK}_${timestamp}.pid
+PID_FILE=pids/${MODEL}_${TASK}_${timestamp}.pid
 : > $PID_FILE
 
 echo "=== ${MODEL^^} Pretraining Started ===" > $LOGFILE

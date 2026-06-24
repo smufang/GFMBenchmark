@@ -884,7 +884,7 @@ class TFinance(InMemoryDataset):
         Transfer DGL graph to PyG Data
         '''
         from dgl.data.utils import load_graphs
-        path = root
+        path = os.path.join(root, 'raw/tfinance')
         graph, _ = load_graphs(path)
         graph = graph[0]
         graph.ndata['label'] = graph.ndata['label'].argmax(1)

@@ -1,6 +1,8 @@
 from transformers import AutoModel
 import numpy as np
 import torch
+import torch.nn.functional as F
+from torch_geometric.nn import FAConv, global_mean_pool
 from .gt import GPS
 
 
@@ -63,11 +65,61 @@ class PrefixEncoder(torch.nn.Module):
         return past_key_values
 
 
-class GraphCLIP(torch.nn.Module):
-    def __init__(self, graph_input_dim, graph_hid_dim, graph_num_layer, attn_kwargs, text_model='tiny'):
+class GraphFAGCN(torch.nn.Module):
+    def __init__(self, in_dim, hidden_dim, out_dim, num_layers, dropout=0.2, epsilon=0.1):
         super().__init__()
-        self.graph_model = GPS(in_dim=graph_input_dim, channels=graph_hid_dim, out_dim=graph_hid_dim, 
-                               pe_dim=8, num_layers=graph_num_layer, attn_type='multihead', attn_kwargs=attn_kwargs)
+        self.dropout = dropout
+        self.input_proj = torch.nn.Linear(in_dim, hidden_dim)
+        self.convs = torch.nn.ModuleList([
+            FAConv(hidden_dim, epsilon, dropout)
+            for _ in range(num_layers)
+        ])
+        self.graph_proj = torch.nn.Linear(hidden_dim * 2, out_dim)
+        self.center_proj = torch.nn.Linear(hidden_dim, out_dim)
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        torch.nn.init.xavier_uniform_(self.input_proj.weight)
+        torch.nn.init.zeros_(self.input_proj.bias)
+        torch.nn.init.xavier_uniform_(self.graph_proj.weight)
+        torch.nn.init.zeros_(self.graph_proj.bias)
+        torch.nn.init.xavier_uniform_(self.center_proj.weight)
+        torch.nn.init.zeros_(self.center_proj.bias)
+        for conv in self.convs:
+            torch.nn.init.xavier_uniform_(conv.att_l.weight)
+            torch.nn.init.xavier_uniform_(conv.att_r.weight)
+
+    def forward(self, x, pe, edge_index, batch, center_idx):
+        h = torch.dropout(x, p=self.dropout, train=self.training)
+        h = F.leaky_relu(self.input_proj(h))
+        raw = h
+
+        for conv in self.convs:
+            h = conv(h, raw, edge_index)
+
+        g_x = global_mean_pool(h, batch)
+        c_x = g_x.clone()
+        mask = center_idx != -1
+        if mask.any():
+            c_x[mask] = h[center_idx[mask]]
+
+        return self.graph_proj(torch.cat((g_x, c_x), dim=1)), self.center_proj(c_x)
+
+
+class GraphCLIP(torch.nn.Module):
+    def __init__(self, graph_input_dim, graph_hid_dim, graph_num_layer, attn_kwargs,
+                 text_model='tiny', backbone='gps', graph_output_dim=384):
+        super().__init__()
+        if backbone == 'gps':
+            self.graph_model = GPS(in_dim=graph_input_dim, channels=graph_hid_dim, out_dim=graph_hid_dim,
+                                   pe_dim=8, num_layers=graph_num_layer, attn_type='multihead',
+                                   attn_kwargs=attn_kwargs)
+        elif backbone == 'fagcn':
+            self.graph_model = GraphFAGCN(
+                graph_input_dim, graph_hid_dim, graph_output_dim, graph_num_layer
+            )
+        else:
+            raise ValueError(f"Unsupported GraphCLIP backbone: {backbone}")
         self.text_model_type = text_model
         text_id = text_ids[text_model]
         text_model = AutoModel.from_pretrained(text_id)

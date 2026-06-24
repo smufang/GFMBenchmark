@@ -46,6 +46,16 @@ class Pretrain(nn.Module):
                 dropout=dropout,
                 activation=activation,
             )
+        elif backbone == 'fagcn':
+            self.gnn_enc = FALayers(
+                input_dim, 
+                hidden_dim, 
+                num_layers, 
+                epsilon=0.1, 
+                dropout=dropout, 
+                activation=activation, 
+                normalize=False,
+                add_self_loops=False)
 
         self.feature_prompt_layer = AlignPrompt(
             input_dim, domain_id=self.domain_id, combinetype=combinetype

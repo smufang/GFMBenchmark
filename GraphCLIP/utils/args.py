@@ -53,10 +53,11 @@ class Arguments:
 
         # Exp
         self.parser.add_argument('--model', type=str, default='graphclip', help='model name')
-        self.parser.add_argument('--model_id', type=str, default='exp1', help='pretrain model id', choices=['exp0', 'exp1', 'exp2', 'exp3', 'exp4'])
+        self.parser.add_argument('--model_id', type=str, default='exp1', help='pretrain model id', choices=['exp0', 'exp1', 'exp2', 'exp3cite', 'exp3social', 'exp3molecule', 'exp4', "none"])
         self.parser.add_argument('--task_name', type=str, default='pretrain', help='task name: pretrain/node/edge/graph', choices=['pretrain', 'node', 'edge', 'graph'])
         self.parser.add_argument('--pattern', type=str, default='cross', help='pattern: cross-domain/single-domain/simple/no-pretrain', choices=['simple', 'cross', 'single','none'])
         self.parser.add_argument('--preprocess', type=str, default='basic', help='preprocessing method', choices=['basic', 'simple'])
+        self.parser.add_argument('--backbone', type=str, default='gps', help='backbone model', choices=['gps','gcn', 'fagcn'])
         self.parser.add_argument('--patience', type=int, default=20, help='early stopping patience')
         self.parser.add_argument('--seed', type=int, help="random seed", default=0)
         self.parser.add_argument('--num_workers', type=int, default=0, help='the number of workers for data loading')
@@ -71,7 +72,7 @@ class Arguments:
         self.parser.add_argument('--hidden_dim', type=int, help="the dimension of hidden features", default=1024)
         self.parser.add_argument('--output_dim', type=int, help="the dimension of output features", default=384)
 
-        self.parser.add_argument('--exp_id', type=str, default='exp1', help='Exp id', choices=['exp0', 'exp1', 'exp2', 'exp3', 'exp4'])
+        self.parser.add_argument('--exp_id', type=str, default='exp1', help='Exp id', choices=['exp0', 'exp1', 'exp2', 'exp3', 'exp4', "none"])
         self.parser.add_argument('--num_shots', type=int, default=5, help='number of shots for few-shot learning')
         self.parser.add_argument('--num_tasks', type=int, default=50, help='number of tasks for few-shot learning')
         

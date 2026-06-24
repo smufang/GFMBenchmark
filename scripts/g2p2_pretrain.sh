@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export CUDA_VISIBLE_DEVICES=3
+export CUDA_VISIBLE_DEVICES=1
 export CUDA_LAUNCH_BLOCKING=1
 export PYTHONUNBUFFERED=1
 
@@ -8,9 +8,10 @@ MODEL="g2p2"
 TASK="pretrain"
 SEEDS=(0)
 COMMON_ARGS="--model ${MODEL} \
-    --model_id exp1 \
+    --model_id exp4 \
     --task_name ${TASK} \
     --pattern simple \
+    --backbone fagcn \
     --use_gpu True \
     --gpu 0 \
     --max_nodes 1 \
@@ -28,10 +29,11 @@ NUM_GPUS=1
 PORT=$(shuf -i 29500-65535 -n 1)
 
 mkdir -p logs/${MODEL}
+mkdir -p pids
 timestamp=$(date +"%Y%m%d_%H%M%S")
 SEEDS=(${@:-0})
 LOGFILE=logs/${MODEL}/${MODEL}_${TASK}_${timestamp}.log
-PID_FILE=${MODEL}_${TASK}_${timestamp}.pid
+PID_FILE=pids/${MODEL}_downstream_${timestamp}.pid
 : > $PID_FILE
 
 echo "=== ${MODEL^^} Pretraining Started ===" > $LOGFILE

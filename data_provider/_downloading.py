@@ -1,7 +1,7 @@
-from data_provider import all
+from data_provider import all_datasets
 
 if __name__ == '__main__':
-    for name, generator in all.items():
+    for name, generator in all_datasets.items():
         try:
             print(f"Downloading {name} ...")
             generator()

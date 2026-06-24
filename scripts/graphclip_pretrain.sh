@@ -8,9 +8,10 @@ MODEL="graphclip"
 TASK="pretrain"
 SEEDS=(0)
 COMMON_ARGS="--model ${MODEL} \
-    --model_id exp3 \
+    --model_id exp4 \
     --task_name ${TASK} \
     --pattern simple \
+    --backbone fagcn \
     --compress_function none \
     --batch_size 512 \
     --lr 1e-5 \
@@ -21,9 +22,10 @@ COMMON_ARGS="--model ${MODEL} \
     --is_logging True "
 
 mkdir -p logs/${MODEL}
+mkdir -p pids
 timestamp=$(date +"%Y%m%d_%H%M%S")
 LOGFILE=logs/${MODEL}/${MODEL}_${TASK}_${timestamp}.log
-PID_FILE=${MODEL}_${TASK}_${timestamp}.pid
+PID_FILE=pids/${MODEL}_${TASK}_${timestamp}.pid
 : > $PID_FILE
 
 echo "=== ${MODEL^^} Pretraining Started ===" > $LOGFILE

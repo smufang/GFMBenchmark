@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch_geometric.nn.conv import GCNConv, GATConv
+from torch_geometric.nn.conv import GCNConv, GATConv,FAConv
 from torch_geometric.nn import TGNMemory, TransformerConv
 from torch_geometric.nn.models.tgn import IdentityMessage, LastAggregator
 from .Conv import SimpleHGNConv, HeCoGCNConv
@@ -173,6 +173,77 @@ class GATLayers(nn.Module):
 
             # Residual connection (skip first layer)
             h = h + out if i > 0 else out
+
+            if prompt_layers:
+                h = prompt_layers[i](h, name)
+
+            if LP:
+                h = self.bns[i](h)
+                h = self.dropout(h)
+
+        return h
+
+
+class FALayers(nn.Module):
+    def __init__(self, input_dim, hidden_dim, num_layers, dropout=0.1, epsilon=0.1,
+                 activation="relu", normalize=True, add_self_loops=True, cached=False):
+        super(FALayers, self).__init__()
+        self.num_layers = num_layers
+        self.dropout = nn.Dropout(dropout)
+
+        if activation == "relu":
+            self.act_fn = F.relu
+        elif activation == "gelu":
+            self.act_fn = F.gelu
+        elif activation == "elu":
+            self.act_fn = F.elu
+        elif activation == "prelu":
+            self.act_fn = None  # PReLU needs separate handling
+        elif activation == "none":
+            self.act_fn = nn.Identity()
+        else:
+            self.act_fn = F.relu  # default
+
+        self.input_proj = nn.Linear(input_dim, hidden_dim)
+        self.convs = nn.ModuleList()
+        self.acts = nn.ModuleList()
+        self.bns = nn.ModuleList()
+
+        for _ in range(num_layers):
+            self.convs.append(FAConv(hidden_dim, eps=epsilon, dropout=0.0,
+                                     cached=cached, add_self_loops=add_self_loops,
+                                     normalize=normalize))
+            if activation == "prelu":
+                self.acts.append(nn.PReLU())
+            else:
+                self.acts.append(nn.Identity())
+            self.bns.append(nn.BatchNorm1d(hidden_dim))
+
+        self.init_weights()
+
+    def init_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    m.bias.data.fill_(0.0)
+            elif isinstance(m, FAConv):
+                nn.init.xavier_uniform_(m.att_l.weight)
+                nn.init.xavier_uniform_(m.att_r.weight)
+
+    def forward(self, x, edge_index, edge_weight=None, LP=False, prompt_layers=None, name=None):
+        if prompt_layers:
+            assert len(prompt_layers) == self.num_layers
+
+        h = self.input_proj(x)
+        raw = h
+
+        for i in range(self.num_layers):
+            h = self.convs[i](h, raw, edge_index, edge_weight=edge_weight)
+            if self.act_fn is not None:
+                h = self.act_fn(h)
+            else:
+                h = self.acts[i](h)
 
             if prompt_layers:
                 h = prompt_layers[i](h, name)

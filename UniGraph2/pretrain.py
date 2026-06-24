@@ -13,6 +13,7 @@ from torch_geometric.data import Data
 from models.unigraph2_model import UniGraph2Model
 from trainers.trainer import UniGraph2Trainer
 from models.unigraph2 import UniGraph2
+from models.unigraph2_fagcn import UniGraph2 as UniGraph2FAGCN
 from data.lp_dataset import LinkPredictionDataset
 from data.nc_dataset import NodeClassificationDataset
 from torch_geometric.loader import NeighborLoader
@@ -97,6 +98,7 @@ PRETRAIN_DICT = {
     2: pretrain_dict_exp1,
     3: pretrain_dict_exp3,
     4: pretrain_dict_exp4,
+    5: pretrain_dict_exp4,
 }
 
 def multidata_sampler(data: Data, name, batch_size=16, num_workers=0):
@@ -318,7 +320,8 @@ def run(params):
     input_dim = params["input_dim"]
 
     # Initialize model
-    model = UniGraph2(
+    ModelClass = UniGraph2FAGCN if params['exp'] == 5 else UniGraph2
+    model = ModelClass(
         input_dims={"text": input_dim},
         hidden_dim=input_dim,
         num_experts=8,
@@ -354,7 +357,7 @@ def run(params):
 
         scheduler.step()
         
-        torch.save(model.state_dict(), "checkpoints/unigraph2_pretrain_exp4.pt")
+        torch.save(model.state_dict(), f"checkpoints/unigraph2_pretrain_exp{params['exp']}.pt")
         print(f"[Epoch {epoch}] Train Loss: {total_train_loss:.4f}")
 
 

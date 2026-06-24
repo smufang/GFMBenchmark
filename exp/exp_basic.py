@@ -101,11 +101,12 @@ class ExpBasic(object):
         return setting
 
     def _simple_setting(self):
-        setting = "{}({})_{}({})_{}({})_s{}_{}shots".format(
+        setting = "{}({})_{}({})_{}_{}({})_s{}_{}shots".format(
             self.args.model,
             self.args.model_id,
             self.args.task_name,
             self.args.pattern,
+            self.args.backbone,
             self.args.target_data, 
             self.args.exp_id,
             self.args.seed,
@@ -114,11 +115,12 @@ class ExpBasic(object):
         return setting
     
     def _simple_pretrain_setting(self):
-        setting = "{}({})_{}({})".format(
+        setting = "{}({})_{}({})_{}".format(
             self.args.model,
             self.args.model_id,
             "pretrain",
             self.args.pattern,
+            self.args.backbone,
         )
         return setting
 
@@ -129,7 +131,12 @@ class ExpBasic(object):
             return
 
         # Create logs directory
-        log_dir = os.path.join(ROOT_DIR, "logs", self.args.model)
+        if self.args.task_name == "pretrain":
+            log_part =  f"logs/{self.args.model}/pretrain"
+        else:
+            log_part = f"logs/{self.args.model}/{self.args.exp_id.upper()}"
+
+        log_dir = os.path.join(ROOT_DIR, log_part)
         os.makedirs(log_dir, exist_ok=True)
 
         # Create log file with timestamp

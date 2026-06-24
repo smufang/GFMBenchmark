@@ -158,7 +158,7 @@ Section('ete', 'End-to-End Training Configs').enable_if(
 @param('data.name')
 def run(func, seed, name):
     import sys
-    sys.path.append("/GFM") # your project root directory
+    sys.path.append("/GFMBenchmark") # your project root directory
     # Fix all randomness
     import random
     import numpy as np

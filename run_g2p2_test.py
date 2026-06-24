@@ -49,6 +49,7 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, default=2e-5, help="pretrain learning rate")
     parser.add_argument("--edge_coef", type=float, default=0.1)
     parser.add_argument("--num_neighs", type=int, default=3)
+    parser.add_argument("--num_layers", type=int, default=2)
 
     parser.add_argument("--gnn_input", type=int, default=128)
     parser.add_argument("--gnn_hid", type=int, default=128)
@@ -69,6 +70,7 @@ if __name__ == "__main__":
     parser.add_argument("--task_name", type=str, default="other-simple", help="task name: pretrain/node/edge/graph")
     parser.add_argument('--pattern', type=str, default='cross', help='pattern: cross-domain/single-domain/simple/no-pretrain', choices=['simple', 'cross', 'single','none'])
     parser.add_argument('--preprocess', type=str, default='basic', help='preprocessing method', choices=['basic', 'simple'])
+    parser.add_argument("--backbone", type=str, default="gcn", choices=["gcn", "fagcn"])
     
     parser.add_argument("--seed", type=int, default=0, help="random seed")
 
@@ -98,12 +100,14 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    pretrain_exps = {
-        "exp1": pretrain,
-        "exp2": pretrain,
-        "exp3": pretrain_exp3,
-        "exp4": pretrain_exp4,
-    }
+    pretrain_exps = {'exp1': pretrain, 
+                     'exp2': pretrain, 
+                     'exp3cite': pretrain_exp3_cite, 
+                     'exp3social': pretrain_exp3_social,
+                     'exp3molecule': pretrain_exp3_molecule,
+                     'exp4': pretrain_exp4, 
+                     'exp0': pretrain_exp0,
+                     'none': None}
     pretrain_dict = pretrain_exps[args.model_id]
 
     exps = {

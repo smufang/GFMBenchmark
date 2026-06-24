@@ -23,7 +23,6 @@ from utils.format_trans import temporal_to_data, hetero_to_data, multi_to_one
 from utils import compress_func
 import warnings
 warnings.filterwarnings("ignore")
-
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, "..", ".."))
 if PROJECT_ROOT not in sys.path:
@@ -111,7 +110,7 @@ def get_loader(params, data, task_labels, task_ids, is_train):
             data,
             num_neighbors=[5, 5, 5],
             input_nodes=task_ids,
-            batch_size=batch_size,
+            batch_size=256,
             shuffle=False,
             directed=False,
             replace=False,
@@ -334,13 +333,9 @@ def run_model_graph(model, full_data, task, params, is_train, proto_emb, is_batc
                             pred_lin = model.get_lin_logits(test_z).mean(1).softmax(dim=-1)
                     
                     pred = (1 - model.trade_off) * pred_proto + model.trade_off * pred_lin
-                    if params['task_name'] == 'graph':
-                        pred_list.append(pred.detach())
-                        y_list.append(y)
-                    else:
-                        pred = torch.argmax(pred, dim=1)
-                        pred_list.append(pred.detach())
-                        y_list.append(y)
+                    pred = torch.argmax(pred, dim=1)
+                    pred_list.append(pred.detach())
+                    y_list.append(y)
 
                 except Exception as e:
                     if not is_batch:
@@ -441,8 +436,8 @@ def run(params):
                 f"input_dim{params['input_dim']}_hd{params['hidden_dim']}_codebook_size_{params['codebook_size']}_layer_{params['num_layers']}_"
                 f"pretrain_on_exp{params['exp']}_seed_{params['pretrain_seed']}"
             )
-            encoder_state = torch.load(os.path.join(path, f'encoder_{params["pretrain_model_epoch"]}.pt'))
-            vq_state = torch.load(os.path.join(path, f'vq_{params["pretrain_model_epoch"]}.pt'))
+            encoder_state = torch.load(os.path.join(path, f'encoder_{params["pretrain_model_epoch"]}.pt'), map_location='cuda:2')
+            vq_state = torch.load(os.path.join(path, f'vq_{params["pretrain_model_epoch"]}.pt'), map_location='cuda:2')
             encoder.load_state_dict(encoder_state, strict=False)
             vq.load_state_dict(vq_state, strict=False)
             encoder = encoder.to(device)

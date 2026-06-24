@@ -9,7 +9,7 @@ import time
 import numpy as np
 
 class Args:
-    def __init__(self, task_name, model_id, exp_id, num_shots=1, batch_size=64, num_tasks=50,seed=0):
+    def __init__(self, task_name, model_id, exp_id, backbone, num_shots=1, batch_size=64, num_tasks=50,seed=0):
         self.model = 'gcope'
         self.model_id = model_id
         self.exp_id = exp_id
@@ -17,7 +17,7 @@ class Args:
         self.pattern = 'simple'
         self.preprocess = 'basic'
         self.mode = 'gcl'
-        self.backbone = 'fagcn'
+        self.backbone = backbone
         self.compress_function = 'svd_gcope'
         self.combinetype = 'none'
         self.input_dim = 100
@@ -50,6 +50,7 @@ exps_downstream = {
 @param('general.few_shot', 'few_shot')
 @param('adapt.batch_size', 'batch_size')
 @param('adapt.repeat_times')
+@param('model.backbone.model_type', 'backbone_model')
 def run(
     model_id,
     exp_id,
@@ -58,9 +59,10 @@ def run(
     few_shot,
     batch_size,
     repeat_times,
+    backbone_model,
     ):
     task_name = dataset[0]
-    args = Args(model_id=model_id, exp_id=exp_id, task_name=task_name, num_shots=few_shot, batch_size=batch_size, num_tasks=repeat_times, seed=seed)
+    args = Args(model_id=model_id, exp_id=exp_id, task_name=task_name, backbone=backbone_model, num_shots=few_shot, batch_size=batch_size, num_tasks=repeat_times, seed=seed)
     dataset_dict = exps_downstream[args.exp_id][dataset[0]]
 
     for name, generator in dataset_dict.items():

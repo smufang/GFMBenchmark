@@ -28,7 +28,14 @@ def build_neigh_ids(num_nodes, edge_index, num_neighs=3) -> dict:
 
 def main(args):
     args.device = torch.device('cuda' if args.use_gpu and torch.cuda.is_available() else 'cpu')
-    pretrain_exps = {'exp1': pretrain, 'exp2': pretrain, 'exp3': pretrain_exp3, 'exp4': pretrain_exp4}
+    pretrain_exps = {'exp1': pretrain, 
+                     'exp2': pretrain, 
+                     'exp3cite': pretrain_exp3_cite, 
+                     'exp3social': pretrain_exp3_social,
+                     'exp3molecule': pretrain_exp3_molecule,
+                     'exp4': pretrain_exp4, 
+                     'exp0': pretrain_exp0,
+                     'none': None}
     pretrain_dict = pretrain_exps[args.model_id]
     exp = ExpPretrain(args, pretrain_dict=pretrain_dict)
     path = exp._create_save_path()
@@ -129,6 +136,7 @@ if __name__ == "__main__":
     parser.add_argument("--lr", type=float, default=2e-5)
     parser.add_argument("--edge_coef", type=float, default=10)
     parser.add_argument("--num_neighs", type=int, default=3)
+    parser.add_argument("--num_layers", type=int, default=2)
 
     parser.add_argument("--gnn_input", type=int, default=128)
     parser.add_argument("--gnn_hid", type=int, default=128)
@@ -174,6 +182,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--pattern', type=str, default='cross', help='pattern: cross-domain/single-domain/simple/no-pretrain', choices=['simple', 'cross', 'single','none'])
     parser.add_argument('--preprocess', type=str, default='basic', help='preprocessing method', choices=['basic', 'simple'])
+    parser.add_argument('--backbone', type=str, default='gcn', help='backbone model', choices=['gcn', 'fagcn'])
 
     args = parser.parse_args()
     

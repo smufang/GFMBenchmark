@@ -56,9 +56,9 @@ class ExpDownstreamBatch(ExpBasic):
         self.task_name = self.args.task_name
 
         # If task is graph-level, run with mini-batch loaders for both tuning and testing; otherwise run on the full graph first.
-        self.is_batch = True if self.task_name == "graph" else False 
+        self.is_batch = True if self.task_name == "graph" or self.args.target_data in ['ogbn-mag'] else False 
         # If task is graph-level, use mini-batch loaders during testing; otherwise test on the full graph first.
-        self.only_test_batch = True if self.task_name == "graph" else False
+        self.only_test_batch = True if self.task_name == "graph" or self.args.target_data in ['ogbn-mag'] else False
 
         if self.args.criterion == 'cross_entropy':
             self.criterion = nn.CrossEntropyLoss(reduction='mean')
@@ -169,9 +169,13 @@ class ExpDownstreamBatch(ExpBasic):
         if self.task_name == "node":
             if self.data_type == 'hetero':
                 num_neighbors = [5, 5, 5, 5]
+                if (self.args.model in ['simple_hgn'] or self.args.backbone in ['fagcn']) and self.args.target_data in ['ogbn-mag']:
+                    num_neighbors = [5, 5, 5]
                 directed = False
             else:
-                num_neighbors = [10, 10, 10, 10] #[5, 5, 5, 5]
+                num_neighbors = [10, 10, 10, 10]
+                if self.args.model in ['mdgfm'] and self.args.target_data in ['Products']:
+                    num_neighbors = [5, 5, 5, 5]
                 directed = True
             loader = NeighborLoader(
                 data,

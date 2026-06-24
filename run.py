@@ -8,26 +8,38 @@ from data_provider import *
 import gc
 
 
+def str2bool(value):
+    if isinstance(value, bool):
+        return value
+    value = value.lower()
+    if value in ("true", "1", "yes", "y"):
+        return True
+    if value in ("false", "0", "no", "n"):
+        return False
+    raise argparse.ArgumentTypeError("Boolean value expected.")
+
+
 def main():
     parser = argparse.ArgumentParser(description='Graph Foundation Model')
 
     # Basic parameters
     parser.add_argument('--model', type=str, default='samgpt', help='model name')
-    parser.add_argument('--model_id', type=str, default='exp1', help='pretrain model id', choices=['exp0', 'exp1', 'exp2', 'exp3', 'exp4', "none"])
-    parser.add_argument('--task_name', type=str, default='pretrain', help='task name: pretrain/node/edge/graph', choices=['pretrain', 'node', 'edge', 'graph'])
-    parser.add_argument('--exp_id', type=str, default='exp1', help='Exp id', choices=['exp0', 'exp1', 'exp2', 'exp3', 'exp4'])
+    parser.add_argument('--model_id', type=str, default='exp1', help='pretrain model id: exp0, exp1, exp2, exp3cite, exp3social, exp3molecule, exp4, none,'
+                                                                    'or dataset name like Cora for single pattern')
+    parser.add_argument('--task_name', type=str, default='pretrain', help='task name: pretrain/node/edge/graph', choices=['pretrain', 'node', 'edge', 'graph', 'view'])
+    parser.add_argument('--exp_id', type=str, default='exp1', help='Exp id: exp0, exp1, exp2, exp3, exp4, or dataset name like Cora for single pattern')
     parser.add_argument('--pattern', type=str, default='cross', help='pattern: cross-domain/single-domain/simple/no-pretrain', choices=['simple', 'cross', 'single','none'])
     parser.add_argument('--preprocess', type=str, default='basic', help='preprocessing method', choices=['basic', 'simple'])
     parser.add_argument('--mode', type=str, default='lp', help='pretrain task: lp/gcl')
-    parser.add_argument('--backbone', type=str, default='gat', help='graph encoder: gcn/gat')
+    parser.add_argument('--backbone', type=str, default='gat', help='graph encoder: gcn/gat/fagcn')
     parser.add_argument('--seed', type=int, default=0, help='random seed')
 
     # Device parameters
-    parser.add_argument('--use_gpu', type=bool, default=False, help='use gpu')
-    parser.add_argument('--use_multi_gpu', type=bool, default=False)
+    parser.add_argument('--use_gpu', type=str2bool, default=False, help='use gpu')
+    parser.add_argument('--use_multi_gpu', type=str2bool, default=False)
     parser.add_argument('--devices', type=str, default='0,1,2,3', help='device ids')
     parser.add_argument('--gpu_type', type=str, default='cuda', help='cuda/mps')
-    parser.add_argument('--use_amp', type=bool, default=False, help='use automatic mixed precision')
+    parser.add_argument('--use_amp', type=str2bool, default=False, help='use automatic mixed precision')
     parser.add_argument('--gpu', type=int, default=0, help='gpu')
 
     # Training parameters
@@ -42,7 +54,7 @@ def main():
     parser.add_argument('--dropout', type=float, default=0.1, help='dropout rate')
     parser.add_argument('--activation', type=str, default='prelu', help='activation function: relu/prelu/gelu')
     parser.add_argument('--compress_function', type=str, default='pca',help='dimension alignment method', choices=['pca', 'svd', 'svd_gcope', 'none'])
-    parser.add_argument('--cache_compress', type=bool, default=False, help='whether to cache the compression results')
+    parser.add_argument('--cache_compress', type=str2bool, default=False, help='whether to cache the compression results')
     parser.add_argument('--criterion', type=str, default='cross_entropy', help='loss criterion', choices=["cross_entropy", "mse", "nll"])
 
     # Model parameters
@@ -65,8 +77,8 @@ def main():
                         help='number of negative samples for link prediction')
 
     parser.add_argument('--checkpoints', type=str, default=str(ROOT_DIR / 'checkpoints'), help='checkpoint path')
-    parser.add_argument('--continue_train', type=bool, default=False, help='continue training from last checkpoint')
-    parser.add_argument('--is_logging', type=bool, default=False, help='whether to log training progress')
+    parser.add_argument('--continue_train', type=str2bool, default=False, help='continue training from last checkpoint')
+    parser.add_argument('--is_logging', type=str2bool, default=False, help='whether to log training progress')
 
     # Few-shot learning parameters
     parser.add_argument('--num_shots', type=int, default=5, help='number of shots for few-shot learning')
@@ -76,7 +88,7 @@ def main():
     parser.add_argument('--k', type=int, default=30, help='number of neighbors for k-NN graph construction')
 
     # GAT GCN
-    parser.add_argument('--using_projection', type=bool, default=False, help='whether to use projection head for downstream tasks')
+    parser.add_argument('--using_projection', type=str2bool, default=False, help='whether to use projection head for downstream tasks')
 
     args = parser.parse_args()
 
@@ -89,30 +101,44 @@ def main():
     if dist.is_initialized():
         dist.destroy_process_group()
 
-    pretrain_exps = {'exp1': pretrain, 
-                     'exp2': pretrain, 
-                     'exp3': pretrain_exp3, 
-                     'exp4': pretrain_exp4, 
-                     'exp0': pretrain_exp0,
-                     'none': None}
-    pretrain_dict = pretrain_exps[args.model_id]
+    if args.pattern == 'cross':
+        # Mapping model_id to the corresponding pre-training dataset collection
+        pretrain_exps = {
+            'exp1': pretrain, 
+            'exp2': pretrain, 
+            'exp3cite': pretrain_exp3_cite, 
+            'exp3social': pretrain_exp3_social,
+            'exp3molecule': pretrain_exp3_molecule,
+            'exp4': pretrain_exp4, 
+            'exp0': pretrain_exp0,
+            'none': None
+        }
+        if args.model_id not in pretrain_exps:
+            raise ValueError(f"Invalid model_id '{args.model_id}' for 'cross' pattern. Options: {list(pretrain_exps.keys())}")
+        pretrain_dict = pretrain_exps[args.model_id]
+
+    elif args.pattern == 'single':
+        # In 'single' pattern, args.model_id specifies a single dataset name
+        if args.model_id not in all_datasets:
+            raise ValueError(f"Dataset '{args.model_id}' not found in available datasets.")
+        pretrain_dict = {args.model_id: all_datasets[args.model_id]}
 
     if args.task_name == 'pretrain':
-        if args.pattern == 'cross':
-            # cross-domain pretraining
-            exp = ExpPretrain(args, pretrain_dict=pretrain_dict)
-        elif args.pattern == 'single':
-            # single-domain pretraining
-            exp = ExpPretrainSingle(args, pretrain_dict=pretrain_dict)
-        else:
+        exp_classes = {'cross': ExpPretrain, 'single': ExpPretrainSingle}
+        if args.pattern not in exp_classes:
             raise ValueError("Only 'cross' and 'single' patterns are supported for pretraining.")
+        exp = exp_classes[args.pattern](args, pretrain_dict=pretrain_dict)
+        
         # Train model
         if not args.use_multi_gpu or (dist.is_initialized() and dist.get_rank() == 0):
             print('Start training...')
         exp.train()
 
     if args.task_name == 'view':
-        exp = ExpPretrain(args, pretrain_dict=pretrain_dict)
+        exp_classes = {'cross': ExpPretrain, 'single': ExpPretrainSingle}
+        if args.pattern not in exp_classes:
+            raise ValueError("Only 'cross' and 'single' patterns are supported for pretraining.")
+        exp = exp_classes[args.pattern](args, pretrain_dict=pretrain_dict)
         if not args.use_multi_gpu or (dist.is_initialized() and dist.get_rank() == 0):
             print('View pretraining...')
         exp.vali()
@@ -122,16 +148,31 @@ def main():
         if not args.use_multi_gpu or (dist.is_initialized() and dist.get_rank() == 0):
             print(f'Starting {args.task_name.capitalize()} Classification Task...')
 
-        exps = {
-            f"exp{i}": {
-                "node": globals()[f"NC_exp{i}"],
-                "edge": globals()[f"EC_exp{i}"],
-                "graph": globals()[f"GC_exp{i}"],
+        tasks = {}
+        if args.pattern == 'cross':
+            exps = {
+                f"exp{i}": {
+                    "node": globals()[f"NC_exp{i}"],
+                    "edge": globals()[f"EC_exp{i}"],
+                    "graph": globals()[f"GC_exp{i}"],
+                }
+                for i in range(0, 5)
             }
-            for i in range(0, 5)
-        }
+            if args.exp_id not in exps: 
+                 raise ValueError(f"Invalid exp_id '{args.exp_id}' for cross pattern downstream task.")
+            tasks = exps[args.exp_id][args.task_name]
+        elif args.pattern == 'single':
+            # In 'single' pattern, args.exp_id specifies a single dataset name for downstream evaluation
+            if args.exp_id not in all_datasets:
+                raise ValueError(f"Dataset '{args.exp_id}' not found in available datasets.")
+            tasks = {args.exp_id: all_datasets[args.exp_id]}
+        elif args.pattern == 'none':
+            if args.exp_id not in all_datasets:
+                raise ValueError(f"Dataset '{args.exp_id}' not found in available datasets.")
+            tasks = {args.exp_id: all_datasets[args.exp_id]}
+            pretrain_dict = None
 
-        for name, dataset in exps[args.exp_id][args.task_name].items():
+        for name, dataset in tasks.items():
             exp = ExpDownstreamBatch(args, pretrain_dict=pretrain_dict, name=name, dataset=dataset)
             exp.run_tasks()
             

@@ -1,5 +1,5 @@
 import sys
-sys.path.append("/GFM") # your project root directory
+sys.path.append("/GFMBenchmark") # your project root directory
 
 import os
 import torch

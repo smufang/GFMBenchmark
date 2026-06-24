@@ -1,5 +1,5 @@
 import sys
-sys.path.append("/GFM") # your project root directory
+sys.path.append("/GFMBenchmark") # your project root directory
 
 from GraphCLIP.llm_prompts import pretrain_categories, pretrain_prompts
 from GraphCLIP.utils.args import Arguments
