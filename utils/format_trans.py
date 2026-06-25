@@ -80,11 +80,15 @@ def temporal_to_data(temporaldata: TemporalData, need_y=False) -> Data:
     dst_name = temporaldata.dst_texts[0] if hasattr(temporaldata, 'dst_texts') else 'dst'
     relation_name = temporaldata.relation_texts[0] if hasattr(temporaldata, 'relation_texts') else 'to'
 
-    data.node_type = torch.tensor([0 if i in src_unique.tolist() else 1 for i in all_nodes_unique.tolist()], dtype=torch.long)
-    data.edge_type = torch.tensor([0] * num_edges + [1] * num_edges, dtype=torch.long)
-    # Textual info
     src_set = set(src_unique.tolist())
     dst_set = set(dst_unique.tolist())
+    # 0: src-only, 1: dst-only, 2: both src and dst
+    data.node_type = torch.tensor([
+        2 if i in src_set and i in dst_set else 0 if i in src_set else 1
+        for i in all_nodes_unique.tolist()
+    ], dtype=torch.long)
+    data.edge_type = torch.tensor([0] * num_edges + [1] * num_edges, dtype=torch.long)
+    # Textual info
     data.raw_texts = [
         f"{src_name}/{dst_name}" if i in src_set and i in dst_set else
         src_name if i in src_set else
