@@ -2,7 +2,7 @@
 
 A comprehensive benchmark for Graph Foundation Models (GFMs), covering pre-training, fine-tuning, and evaluation across diverse graph domains and tasks.
 
-[[Paper]](https://arxiv.org/abs/2603.10033) | [[Hugging Face]](TBD) | [[Website]](TBD)
+[[arXiv]](https://arxiv.org/abs/2603.10033) | [[Hugging Face]](TBD) | [[Website]](https://xiexuanting.github.io/GFMBenchmark_Home/)
 
 ---
 
