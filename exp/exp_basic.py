@@ -287,7 +287,6 @@ class ExpBasic(object):
         alignment_funcs = {
             "pca": "compress_pca",
             "svd": "compress_svd",
-            "svd_gcope": "gcope_svd",
             "none": None,
         }
         if self.args.compress_function in alignment_funcs:

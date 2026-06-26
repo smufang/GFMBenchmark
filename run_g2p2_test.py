@@ -84,7 +84,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=1024, help="batch size for sampling")
     parser.add_argument('--weight_decay', type=float, default=0.0, help='weight decay')
     parser.add_argument("--num_workers", type=int, default=4, help="number of workers for data loading")
-    parser.add_argument("--compress_function",type=str,default="pca",help="dimension alignment method: pca/svd/svd_gcope/none")
+    parser.add_argument("--compress_function",type=str,default="pca",help="dimension alignment method: pca/svd/none")
     parser.add_argument("--cache_compress",type=bool,default=False,help="whether to cache the compression results")
     parser.add_argument('--criterion', type=str, default='cross_entropy', help='loss criterion', choices=["cross_entropy", "mse", "nll"])
     # Model parameters

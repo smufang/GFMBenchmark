@@ -53,7 +53,7 @@ def main():
     parser.add_argument('--patience', type=int, default=10, help='early stopping patience')
     parser.add_argument('--dropout', type=float, default=0.1, help='dropout rate')
     parser.add_argument('--activation', type=str, default='prelu', help='activation function: relu/prelu/gelu')
-    parser.add_argument('--compress_function', type=str, default='pca',help='dimension alignment method', choices=['pca', 'svd', 'svd_gcope', 'none'])
+    parser.add_argument('--compress_function', type=str, default='pca',help='dimension alignment method', choices=['pca', 'svd', 'none'])
     parser.add_argument('--cache_compress', type=str2bool, default=False, help='whether to cache the compression results')
     parser.add_argument('--criterion', type=str, default='cross_entropy', help='loss criterion', choices=["cross_entropy", "mse", "nll"])
 

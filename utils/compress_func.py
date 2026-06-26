@@ -79,16 +79,6 @@ def compress_svd(node_feature: torch.Tensor, k: int) -> torch.Tensor:
         x_pad = pad_to_size(node_feature, k).detach()
         U, S, _ = torch.linalg.svd(x_pad, full_matrices=False)
         return U[:, :k] @ torch.diag(S[:k])
-    
-def gcope_svd(node_feature: torch.Tensor, k: int) -> torch.Tensor:
-    if node_feature.size(-1) > k:
-        node_feature = compress_svd(node_feature, k)
-    elif node_feature.size(-1) < k:
-        node_feature = pad_to_size(node_feature, k).float()
-    else:
-        node_feature = node_feature.float()
-    return node_feature
-
 if __name__ == '__main__':
     from data_provider.data_loader import get_original_data
     from data_provider import pretrain

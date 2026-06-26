@@ -61,7 +61,7 @@ class Arguments:
         self.parser.add_argument('--patience', type=int, default=20, help='early stopping patience')
         self.parser.add_argument('--seed', type=int, help="random seed", default=0)
         self.parser.add_argument('--num_workers', type=int, default=0, help='the number of workers for data loading')
-        self.parser.add_argument('--compress_function', type=str, default='none',help='dimension alignment method', choices=['pca', 'svd', 'svd_gcope', 'none'])
+        self.parser.add_argument('--compress_function', type=str, default='none',help='dimension alignment method', choices=['pca', 'svd', 'none'])
         self.parser.add_argument('--cache_compress', type=bool, default=False, help='whether to cache the compression results')
         self.parser.add_argument('--is_logging', type=bool, default=False, help='whether to log training progress')
         self.parser.add_argument('--continue_train', type=bool, default=False, help='whether to continue training from checkpoint')

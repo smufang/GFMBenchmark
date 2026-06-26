@@ -18,7 +18,7 @@ class Args:
         self.preprocess = 'basic'
         self.mode = 'gcl'
         self.backbone = backbone
-        self.compress_function = 'svd_gcope'
+        self.compress_function = 'svd'
         self.combinetype = 'none'
         self.input_dim = 100
         self.hidden_dim = 128

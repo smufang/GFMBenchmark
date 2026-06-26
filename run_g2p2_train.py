@@ -170,7 +170,7 @@ if __name__ == "__main__":
     parser.add_argument('--weight_decay', type=float, default=0.0, help='weight decay')
     parser.add_argument('--num_workers', type=int, default=4, help='number of workers for data loading')
     parser.add_argument('--compress_function', type=str, default='pca',
-                        help='dimension alignment method: pca/svd/svd_gcope/none')
+                        help='dimension alignment method: pca/svd/none')
     parser.add_argument('--cache_compress', type=bool, default=False, help='whether to cache the compression results')
 
     # Model parameters
