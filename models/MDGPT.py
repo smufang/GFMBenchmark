@@ -33,7 +33,7 @@ class Pretrain(nn.Module):
             self.gnn_enc = FALayers(input_dim, hidden_dim, num_layers, epsilon=0.1, dropout=dropout, activation=activation)
 
         self.lp = LpGPT()
-        self.graphcl = GraphCLGPT(hidden_dim, sim='bil')
+        self.dgi = DGIGPT(hidden_dim, sim='bil')
 
         self.feature_prompt_layer = AlignPrompt(input_dim, domain_id=self.domain_id, combinetype=combinetype)
         self.loss = nn.BCEWithLogitsLoss()
@@ -47,12 +47,12 @@ class Pretrain(nn.Module):
         fea_prelogits = self.lp(self.gnn_enc, data_fp, prompt_layers=None)
         return fea_prelogits
 
-    def compute_graphcl_prelogits(self, data, aug_type='edge',
-                                  samp_bias1=None, samp_bias2=None):
+    def compute_dgi_prelogits(self, data, aug_type='edge',
+                              samp_bias1=None, samp_bias2=None):
         data_fp = data.clone()
         data_fp.x = self.feature_prompt_layer(data_fp.x, data_fp.name)
-        fea_prelogits, fea_lbl = self.graphcl(self.gnn_enc, data_fp, samp_bias1, samp_bias2, aug_type=aug_type,
-                                              drop_percent=self.drop_percent, prompt_layers=None)
+        fea_prelogits, fea_lbl = self.dgi(self.gnn_enc, data_fp, samp_bias1, samp_bias2, aug_type=aug_type,
+                                          drop_percent=self.drop_percent, prompt_layers=None)
 
         return fea_prelogits, fea_lbl
 
@@ -70,10 +70,10 @@ class Pretrain(nn.Module):
         }
 
     def forward(self, data, samp_bias1=None, samp_bias2=None):
-        if self.mode == 'gcl':
-            logits, lbl = self.compute_graphcl_prelogits(data, aug_type=self.aug_type,
-                                                         samp_bias1=samp_bias1, samp_bias2=samp_bias2
-                                                         )
+        if self.mode == 'dgi':
+            logits, lbl = self.compute_dgi_prelogits(data, aug_type=self.aug_type,
+                                                     samp_bias1=samp_bias1, samp_bias2=samp_bias2
+                                                     )
             total_loss = self.loss(logits / self.temperature, lbl)
         elif self.mode == 'lp':
             logits = self.compute_linkpred_prelogits(data)
@@ -81,7 +81,7 @@ class Pretrain(nn.Module):
                                                              n=self.num_neg_samples)
             total_loss = LpGPT.compare_loss(logits, sample_edge_index, temperature=self.temperature)
         else:
-            raise ValueError("Invalid mode. Use 'lp' for link prediction or 'gcl'")
+            raise ValueError("Invalid mode. Use 'lp' for link prediction or 'dgi'")
 
         return total_loss
 

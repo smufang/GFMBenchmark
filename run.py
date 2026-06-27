@@ -30,7 +30,7 @@ def main():
     parser.add_argument('--exp_id', type=str, default='exp1', help='Exp id: exp0, exp1, exp2, exp3, exp4, or dataset name like Cora for single pattern')
     parser.add_argument('--pattern', type=str, default='cross', help='pattern: cross-domain/single-domain/simple/no-pretrain', choices=['simple', 'cross', 'single','none'])
     parser.add_argument('--preprocess', type=str, default='basic', help='preprocessing method', choices=['basic', 'simple'])
-    parser.add_argument('--mode', type=str, default='lp', help='pretrain task: lp/gcl')
+    parser.add_argument('--mode', type=str, default='lp', help='pretrain task: lp/gcl/dgi')
     parser.add_argument('--backbone', type=str, default='gat', help='graph encoder: gcn/gat/fagcn')
     parser.add_argument('--seed', type=int, default=0, help='random seed')
 

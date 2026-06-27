@@ -99,11 +99,11 @@ class LpGPT(nn.Module):
         return self.sigmod(h)
 
 
-class GraphCLGPT(nn.Module):
-    """Graph contrastive learning task in MDGPT, SAMGPT"""
+class DGIGPT(nn.Module):
+    """DGI task in MDGPT, SAMGPT"""
 
     def __init__(self, hidden_dim, sim='bil'):
-        super(GraphCLGPT, self).__init__()
+        super(DGIGPT, self).__init__()
         self.sigmoid = nn.Sigmoid()
         if sim == 'bil':
             self.disc = DiscriminatorBilinear(hidden_dim)

@@ -54,7 +54,7 @@ bash scripts/mdgfm_downstream.sh
 | `--model_id` | Pretrain experiment setting | `exp1`, `exp3cite`, `exp3social`, `exp3molecule`, `exp4`, `exp0` (testing only), `none` |
 | `--exp_id` | Downstream experiment setting | `exp1`, `exp2`, `exp3`, `exp4`, `exp0` (testing only) |
 | `--backbone` | Graph encoder | `gcn`, `gat`, `fagcn` |
-| `--mode` | Pretrain task | `lp` (link prediction, for MDGFM), `gcl` (graph contrastive learning, for MDGPT/SAMGPT) |
+| `--mode` | Pretrain task | `lp` (link prediction, for MDGFM), `gcl` (graph contrastive learning), `dgi` (DGI, for MDGPT/SAMGPT) |
 | `--task_name` | Downstream task | `node`, `edge`, `graph` |
 
 > For experiment-to-parameter mapping, see [Section 6: Experiment Compatibility Matrix](#6-experiment-compatibility-matrix).

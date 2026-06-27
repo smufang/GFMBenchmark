@@ -11,7 +11,7 @@ COMMON_ARGS="--model ${MODEL} \
     --model_id exp4 \
     --task_name ${TASK} \
     --pattern cross \
-    --mode gcl \
+    --mode dgi \
     --backbone fagcn \
     --use_gpu True \
     --devices 0 \

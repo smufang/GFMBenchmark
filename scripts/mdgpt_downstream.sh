@@ -13,7 +13,7 @@ COMMON_ARGS="--model ${MODEL} \
     --model_id exp4 \
     --exp_id exp4 \
     --pattern cross \
-    --mode gcl \
+    --mode dgi \
     --backbone fagcn \
     --use_gpu True \
     --devices 0 \

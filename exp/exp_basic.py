@@ -68,7 +68,7 @@ class ExpBasic(object):
             self.args.model_id,
             self.args.task_name,  # petrain
             self.args.pattern,  # cross or single
-            self.args.mode,  # lp or gcl
+            self.args.mode,  # lp, gcl, or dgi
             self.args.backbone,
             self.args.compress_function,
             self.args.combinetype,
@@ -89,7 +89,7 @@ class ExpBasic(object):
             self.args.model_id,
             "pretrain",
             self.args.pattern,  # cross or single
-            self.args.mode,  # lp or gcl
+            self.args.mode,  # lp, gcl, or dgi
             self.args.backbone,
             self.args.compress_function,
             self.args.combinetype,
