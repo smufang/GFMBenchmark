@@ -52,11 +52,11 @@ Ensure PyTorch is compatible with your CUDA version.
 | Source | Description | Recommendation |
 |--------|-------------|----------------|
 | **Full Datasets** | All raw datasets | For Reproduction |
-| **Lite Datasets** | Essential subset for quick testing | For Quick Start |
+| **Lite Datasets** | Essential subset for quick testing + GCOPE `induced_graph` & GraphCLIP `subgraph summary` | For Quick Start |
 | **GFM-checkpoints** | Pre-trained model weights | For Evaluation |
-| **datasets_split.zip** | Pre-generated few-shot splits + GCOPE `induced_graph` & GraphCLIP `subgraph summary` | Highly Recommended |
+| **datasets_split.zip** | Pre-generated few-shot splits | Highly Recommended |
 
-> Generating GCOPE `induced_graph` and GraphCLIP summaries locally is time/memory-consuming. We strongly suggest downloading the **Pre-processed Files** directly.
+> Generating GCOPE `induced_graph` and GraphCLIP summaries locally is time/memory-consuming. We strongly suggest downloading the **Lite Datasets** directly.
 
 ### Option A: Automatic Download
 
