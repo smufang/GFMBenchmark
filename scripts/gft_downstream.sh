@@ -4,7 +4,7 @@
 mkdir -p logs/gft
 timestamp=$(date +"%Y%m%d_%H%M%S")
 
-EXP=2
+EXP=2  # 1 2 3citation 3social 3molecular 4 5 (5 = Setting IV with FAGCN; 3 = earlier-version corpus)
 GPU=0
 BATCH_SIZE=256
 TASK_NAME=node # node edge graph
@@ -26,7 +26,12 @@ EXP4_node_DATASETS=(Pubmed Products Actor Wikipedia Chameleon ogbn-mag)
 EXP4_edge_DATASETS=(WIKI WN18RR)
 EXP4_graph_DATASETS=(PCBA)
 
-DATASETS_VAR=EXP${EXP}_${TASK_NAME}_DATASETS
+case "${EXP}" in
+    3*) GROUP=3 ;;        # 3citation / 3social / 3molecular share the Setting III test datasets
+    5)  GROUP=4 ;;        # FAGCN variant of Setting IV
+    *)  GROUP=${EXP} ;;
+esac
+DATASETS_VAR=EXP${GROUP}_${TASK_NAME}_DATASETS[@]  # [@] so that the indirect expansion below yields the whole array
 DATASETS=("${!DATASETS_VAR}")
 
 echo "======================================"

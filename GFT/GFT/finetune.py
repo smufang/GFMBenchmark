@@ -436,9 +436,12 @@ def run(params):
                 f"input_dim{params['input_dim']}_hd{params['hidden_dim']}_codebook_size_{params['codebook_size']}_layer_{params['num_layers']}_"
                 f"pretrain_on_exp{params['exp']}_seed_{params['pretrain_seed']}"
             )
-            encoder_state = torch.load(os.path.join(path, f'encoder_{params["pretrain_model_epoch"]}.pt'), map_location='cuda:2')
-            vq_state = torch.load(os.path.join(path, f'vq_{params["pretrain_model_epoch"]}.pt'), map_location='cuda:2')
-            encoder.load_state_dict(encoder_state, strict=False)
+            encoder_state = torch.load(os.path.join(path, f'encoder_{params["pretrain_model_epoch"]}.pt'), map_location='cpu')
+            vq_state = torch.load(os.path.join(path, f'vq_{params["pretrain_model_epoch"]}.pt'), map_location='cpu')
+            missing = encoder.load_state_dict(encoder_state, strict=False).missing_keys
+            if missing:
+                raise RuntimeError(f"The checkpoint in {path} does not match --backbone {params['backbone']} "
+                                   f"(missing {len(missing)} encoder weights, e.g. {missing[0]}).")
             vq.load_state_dict(vq_state, strict=False)
             encoder = encoder.to(device)
             vq = vq.to(device)

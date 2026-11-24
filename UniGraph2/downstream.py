@@ -26,10 +26,18 @@ PROJECT_ROOT = os.path.dirname(BASE_DIR)
 sys.path.append(PROJECT_ROOT)
 from data_provider.data_generator import *
 
+# Pre-training ids; checkpoints are saved as checkpoints/unigraph2_pretrain_exp<id>.pt
+#   1, 2                            Settings I and II (same corpus)
+#   3citation, 3social, 3molecular  Setting III-C, III-S, III-M
+#   4                               Setting IV
+#   5                               Setting IV corpus with the FAGCN encoder (models/unigraph2_fagcn.py); all others use GAT
+#   3                               corpus of an earlier version of the paper (Cora, ACM, DBLP); not used in the current version
+EXP_CHOICES = ['1', '2', '3', '3citation', '3social', '3molecular', '4', '5']
+
 def get_args_finetune():
     parser = argparse.ArgumentParser()
     parser.add_argument("--finetune_dataset", "--dataset", "--data", type=str, default="Pubmed")
-    parser.add_argument("--exp", type=int, default=3)
+    parser.add_argument("--exp", type=str, default="3", choices=EXP_CHOICES)
     parser.add_argument('--compress_function', type=str, default='pca',
                         help='dimension alignment method: pca/svd')
     parser.add_argument('--input_dim', type=int, default=50)
@@ -171,12 +179,12 @@ def get_loader(params, data, task_labels, task_ids, is_train):
             yield batch, batch.graph_label, batch.graph_label_index
 
 
-def get_unigraph2_encoder(ckpt_path: str, in_dim_text: int, hidden_dim: int, device: torch.device, exp: int = 1):
+def get_unigraph2_encoder(ckpt_path: str, in_dim_text: int, hidden_dim: int, device: torch.device, exp: str = '1'):
     input_dims = {
         "text": in_dim_text,
     }
 
-    ModelClass = UniGraph2FAGCN if exp == 5 else UniGraph2
+    ModelClass = UniGraph2FAGCN if exp == '5' else UniGraph2
     model = ModelClass(
         input_dims=input_dims,
         hidden_dim=hidden_dim,
@@ -189,13 +197,16 @@ def get_unigraph2_encoder(ckpt_path: str, in_dim_text: int, hidden_dim: int, dev
         lambda_spd=0.5,
     )
 
-    state = torch.load(ckpt_path)
+    state = torch.load(ckpt_path, map_location="cpu")
     if isinstance(state, dict) and "state_dict" in state:
         state_dict = {k.replace("model.", ""): v for k, v in state["state_dict"].items()}
     else:
         state_dict = state
 
-    model.load_state_dict(state_dict, strict=False)
+    missing = model.load_state_dict(state_dict, strict=False).missing_keys
+    if missing:
+        raise RuntimeError(f"{ckpt_path} does not match the {'FAGCN' if exp == '5' else 'GAT'} encoder used for --exp {exp} "
+                           f"(missing {len(missing)} weights, e.g. {missing[0]}).")
     model.to(device)
     model.eval()
     for p in model.parameters():

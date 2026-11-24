@@ -40,10 +40,32 @@ pretrain_dict_exp4 = {
     'Elliptic': elliptic
 }
 
+# Corpus of an earlier version of the paper; not used in the current version
 pretrain_dict_exp3 = {
     'Cora': cora,
     'ACM': acm,
     'DBLP': dblp
+}
+
+# Setting III: pre-train on one domain (same corpora as pretrain_exp3_cite / _social / _molecule in data_provider/__init__.py)
+pretrain_dict_exp3citation = {
+    'Cora': cora,
+    'ogbn-arxiv': ogbn_arxiv,
+    'ACM': acm,
+    'DBLP': dblp,
+}
+
+pretrain_dict_exp3social = {
+    'Reddit': reddit,
+    'Texas': texas,
+    'Wisconsin': wisconsin,
+    'Cornell': cornell,
+    'IMDB': imdb,
+}
+
+pretrain_dict_exp3molecular = {
+    'HIV': hiv,
+    'COX2': cox2,
 }
 
 pretrain_dict_exp1 = {
@@ -70,10 +92,14 @@ pretrain_dict_exp1 = {
 }
 
 PRETRAIN_DICT = {
-    1: pretrain_dict_exp1,
-    2: pretrain_dict_exp1,
-    3: pretrain_dict_exp3,
-    4: pretrain_dict_exp4,
+    '1': pretrain_dict_exp1,
+    '2': pretrain_dict_exp1,
+    '3': pretrain_dict_exp3,
+    '3citation': pretrain_dict_exp3citation,
+    '3social': pretrain_dict_exp3social,
+    '3molecular': pretrain_dict_exp3molecular,
+    '4': pretrain_dict_exp4,
+    '5': pretrain_dict_exp4,  # Setting IV corpus, pre-trained with --backbone fagcn
 }
 
 def multidata_sampler(data: Data, name, batch_size=16, num_workers=0):

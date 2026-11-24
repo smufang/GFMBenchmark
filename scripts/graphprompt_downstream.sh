@@ -13,7 +13,7 @@ EXP_node_DATASETS=(Cora ACM Reddit Wisconsin Photo Elliptic) # Cora ACM Reddit W
 EXP_edge_DATASETS=(FB15K237)
 EXP_graph_DATASETS=(HIV COX2 PROTEINS)
 
-DATASETS_VAR=EXP_${TASK_NAME}_DATASETS
+DATASETS_VAR=EXP_${TASK_NAME}_DATASETS[@]  # [@] so that the indirect expansion below yields the whole array
 DATASETS=("${!DATASETS_VAR}")
 
 echo "======================================"

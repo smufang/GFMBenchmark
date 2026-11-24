@@ -1,5 +1,29 @@
 import argparse
 
+# Pre-training ids; the checkpoint folders are named `..._pretrain_on_exp<id>_seed_<seed>`.
+#   1, 2                          Settings I and II (same corpus)
+#   3citation, 3social, 3molecular  Setting III-C, III-S, III-M
+#   4                             Setting IV
+#   5                             Setting IV corpus with the FAGCN backbone
+#   3                             corpus of an earlier version of the paper (Cora, ACM, DBLP); not used in the current version
+EXP_CHOICES = ['1', '2', '3', '3citation', '3social', '3molecular', '4', '5']
+
+
+def fill_exp_defaults(args):
+    """Fill the arguments left unset with the values the released checkpoints of `--exp` were pre-trained with."""
+    large = args.exp in ('1', '2')  # Settings I/II use 64-d features and a 128-code codebook; the others 50-d and 64
+    defaults = {
+        'input_dim': 64 if large else 50,
+        'hidden_dim': 64 if large else 50,
+        'code_dim': 64 if large else 50,
+        'codebook_size': 128 if large else 64,
+        'backbone': 'fagcn' if args.exp == '5' else 'sage',
+    }
+    for name, value in defaults.items():
+        if getattr(args, name) is None:
+            setattr(args, name, value)
+    return args
+
 
 def get_args_pretrain():
     parser = argparse.ArgumentParser('Pretrain')
@@ -8,20 +32,20 @@ def get_args_pretrain():
     parser.add_argument("--debug", action="store_true")
     parser.add_argument("--use_params", action="store_true")
     parser.add_argument('--gpu', type=int, default=0)
-    parser.add_argument('--exp', type=int, default=3)
+    parser.add_argument('--exp', type=str, default='3', choices=EXP_CHOICES)
 
     # Encoder Parameters
-    parser.add_argument('--input_dim', type=int, default=50) #exp1:64
-    parser.add_argument('--hidden_dim', type=int, default=50) #exp1:64
+    parser.add_argument('--input_dim', type=int, default=None)  # default: 64 for exp 1/2, else 50
+    parser.add_argument('--hidden_dim', type=int, default=None)  # default: 64 for exp 1/2, else 50
     parser.add_argument('--num_layers', '--layers', type=int, default=2)
     parser.add_argument('--activation', '--act', type=str, default="relu")
-    parser.add_argument('--backbone', type=str, default="sage")
+    parser.add_argument('--backbone', type=str, default=None)  # default: fagcn for exp 5, else sage
     parser.add_argument('--normalize', type=str, default="batch", choices=['none', 'batch', 'layer'])
     parser.add_argument('--dropout', type=float, default=0.15)
 
     # VQ Parameters
-    parser.add_argument('--code_dim', type=int, default=50) #exp1:64
-    parser.add_argument('--codebook_size', type=int, default=64) #exp1:128
+    parser.add_argument('--code_dim', type=int, default=None)  # default: 64 for exp 1/2, else 50
+    parser.add_argument('--codebook_size', type=int, default=None)  # default: 128 for exp 1/2, else 64
     parser.add_argument('--codebook_head', type=int, default=4)
     parser.add_argument('--codebook_decay', type=float, default=0.8)
     parser.add_argument('--commit_weight', type=float, default=10)
@@ -45,7 +69,7 @@ def get_args_pretrain():
     parser.add_argument('--sem_encoder_decay', type=float, default=0.99)
     parser.add_argument('--use_schedular', type=bool, default=True)
     parser.add_argument('--patience', type=int, default=10, help='early stopping patience')
-    args = parser.parse_args()
+    args = fill_exp_defaults(parser.parse_args())
     return vars(args)
 
 
@@ -58,7 +82,7 @@ def get_args_finetune():
     parser.add_argument("--setting", type=str, default="few_shot") #standard/few_shot
     parser.add_argument('--save', action='store_true')
     parser.add_argument('--gpu', type=int, default=0)
-    parser.add_argument('--exp', type=int, default=3)
+    parser.add_argument('--exp', type=str, default='3', choices=EXP_CHOICES)
 
     # Few-shot Parameters
     parser.add_argument('--compress_function', type=str, default='pca',
@@ -75,17 +99,17 @@ def get_args_finetune():
     parser.add_argument('--pretrain_seed', '--pt_seed', type=int, default=42)
 
     # Encoder Parameters
-    parser.add_argument("--input_dim", type=int, default=50)
-    parser.add_argument("--hidden_dim", type=int, default=50)
+    parser.add_argument("--input_dim", type=int, default=None)  # default: 64 for exp 1/2, else 50
+    parser.add_argument("--hidden_dim", type=int, default=None)  # default: 64 for exp 1/2, else 50
     parser.add_argument("--num_layers", type=int, default=2)
     parser.add_argument("--activation", '--act', type=str, default="relu")
-    parser.add_argument("--backbone", type=str, default="sage")
+    parser.add_argument("--backbone", type=str, default=None)  # default: fagcn for exp 5, else sage
     parser.add_argument("--normalize", type=str, default="batch")
     parser.add_argument("--dropout", type=float, default=0.15)
 
     # VQ Parameters
-    parser.add_argument("--code_dim", type=int, default=50)
-    parser.add_argument("--codebook_size", type=int, default=64)
+    parser.add_argument("--code_dim", type=int, default=None)  # default: 64 for exp 1/2, else 50
+    parser.add_argument("--codebook_size", type=int, default=None)  # default: 128 for exp 1/2, else 64
     parser.add_argument("--codebook_head", type=int, default=4)
     parser.add_argument("--codebook_decay", type=float, default=0.8)
     parser.add_argument("--commit_weight", type=float, default=0.25)
@@ -114,5 +138,5 @@ def get_args_finetune():
     parser.add_argument('--no_lin_clf', action='store_true')
     parser.add_argument('--no_proto_clf', action='store_true')
 
-    args = parser.parse_args()
+    args = fill_exp_defaults(parser.parse_args())
     return vars(args)

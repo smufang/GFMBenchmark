@@ -91,7 +91,7 @@ These models have their own pretrain/downstream scripts and do **not** use `run.
 
 ### GFT
 
-Uses `GFT/GFT/pretrain.py` and `GFT/GFT/finetune.py` with `--exp` (integer).
+Uses `GFT/GFT/pretrain.py` and `GFT/GFT/finetune.py` with `--exp` (pre-training id, see the table below).
 
 ```bash
 # Pretrain: edit EXP=1 in the script
@@ -105,14 +105,18 @@ bash scripts/gft_downstream.sh
 |---------|--------------|-------------------|
 | 1 | exp1 (all 20 datasets) | sage |
 | 2 | exp1 (same as exp1) | sage |
-| 3 | exp3 (citation subset) | sage |
+| 3citation | Setting III-C: Cora, ogbn-arxiv, ACM, DBLP | sage |
+| 3social | Setting III-S: Reddit, Texas, Wisconsin, Cornell, IMDB | sage |
+| 3molecular | Setting III-M: HIV, COX2 | sage |
 | 4 | exp4 (6 datasets) | sage |
+| 5 | exp4 (same as exp4) | **fagcn** |
+| 3 | Cora, ACM, DBLP (earlier version of the paper; not used in the current version) | sage |
 
-**Exp5 = FAGCN variant:** GFT's `--backbone` arg defaults to `sage`. To run with FAGCN, add `--backbone fagcn` in the script. GFT does not have a built-in exp5 mapping; "exp5" means rerunning exp4 with `--backbone fagcn`.
+The defaults of `--backbone`, `--input_dim`, `--hidden_dim`, `--code_dim` and `--codebook_size` follow `--exp`, so that they match the released checkpoints: `fagcn` for exp5 and `sage` otherwise; 64-d features and a 128-code codebook for exp1/exp2, 50-d and 64 codes otherwise. Passing any of them explicitly overrides the default. Fine-tuning stops with an error if the checkpoint does not match the encoder.
 
 ### UniGraph2
 
-Uses `UniGraph2/pretrain.py` and `UniGraph2/downstream.py` with `--exp` (integer).
+Uses `UniGraph2/pretrain.py` and `UniGraph2/downstream.py` with `--exp` (pre-training id, see the table below).
 
 ```bash
 # Pretrain
@@ -126,11 +130,14 @@ bash scripts/unigraph2_downstream.sh
 |---------|--------------|-------------|
 | 1 | exp1 (all 20 datasets) | GATConv |
 | 2 | exp1 (same as exp1) | GATConv |
-| 3 | exp3 (citation subset) | GATConv |
+| 3citation | Setting III-C: Cora, ogbn-arxiv, ACM, DBLP | GATConv |
+| 3social | Setting III-S: Reddit, Texas, Wisconsin, Cornell, IMDB | GATConv |
+| 3molecular | Setting III-M: HIV, COX2 | GATConv |
 | 4 | exp4 (6 datasets) | GATConv |
 | 5 | exp4 (same as exp4) | **FAGCN** (FAConv) |
+| 3 | Cora, ACM, DBLP (earlier version of the paper; not used in the current version) | GATConv |
 
-**Exp5 = FAGCN variant:** Set `--exp 5` to use `unigraph2_fagcn.py` (FAConv) instead of the default GATConv. Uses the same pretrain data as exp4.
+**Exp5 = FAGCN variant:** Set `--exp 5` to use `unigraph2_fagcn.py` (FAConv) instead of the default GATConv. Uses the same pretrain data as exp4. `downstream.py` stops with an error if the checkpoint does not match the encoder of its `--exp`.
 
 ### GraphPrompt / DGI
 
@@ -271,11 +278,13 @@ To fix OOM, manually change the `num_neighbors` list in the corresponding branch
 |------------|---------|-------------|--------|
 | exp1 | `1` | `sage` (default) | OK |
 | exp2 | `2` | `sage` | OK |
-| exp3 | `3` | `sage` | OK (uses citation subset) |
+| exp3cite | `3citation` | `sage` | OK |
+| exp3social | `3social` | `sage` | OK |
+| exp3molecule | `3molecular` | `sage` | OK |
 | exp4 | `4` | `sage` | OK |
-| exp5 (fagcn) | `4` | `fagcn` (add `--backbone fagcn`) | OK — reuses exp4 data, changes encoder |
+| exp5 (fagcn) | `5` | `fagcn` (default for exp5) | OK — reuses exp4 data, changes encoder |
 
-> Note: GFT uses integer `--exp` (1-4), **not** string model_id. There is no `exp3cite/social/molecule` split — GFT's exp3 only has the citation subset. Checkpoint path is auto-generated from exp number.
+> Note: GFT's `--exp` takes its own ids (`1`, `2`, `3citation`, `3social`, `3molecular`, `4`, `5`), **not** the `--model_id` of `run.py`. The checkpoint path is generated from it: `GFT/ckpts/pretrain_model/..._pretrain_on_exp<id>_seed_42/`.
 
 ### UniGraph2
 
@@ -283,7 +292,9 @@ To fix OOM, manually change the `num_neighbors` list in the corresponding branch
 |------------|---------|-------------|--------|
 | exp1 | `1` | GATConv | OK |
 | exp2 | `2` | GATConv | OK |
-| exp3 | `3` | GATConv | OK (citation subset) |
+| exp3cite | `3citation` | GATConv | OK |
+| exp3social | `3social` | GATConv | OK |
+| exp3molecule | `3molecular` | GATConv | OK |
 | exp4 | `4` | GATConv | OK |
 | exp5 (fagcn) | `5` | FAConv (FAGCN) | OK — uses exp4 data with FAGCN backbone |
 

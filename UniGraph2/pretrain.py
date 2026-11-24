@@ -32,9 +32,17 @@ PROJECT_ROOT = os.path.dirname(BASE_DIR)
 sys.path.append(PROJECT_ROOT)
 from data_provider.data_generator import *
 
+# Pre-training ids; checkpoints are saved as checkpoints/unigraph2_pretrain_exp<id>.pt
+#   1, 2                            Settings I and II (same corpus)
+#   3citation, 3social, 3molecular  Setting III-C, III-S, III-M
+#   4                               Setting IV
+#   5                               Setting IV corpus with the FAGCN encoder (models/unigraph2_fagcn.py); all others use GAT
+#   3                               corpus of an earlier version of the paper (Cora, ACM, DBLP); not used in the current version
+EXP_CHOICES = ['1', '2', '3', '3citation', '3social', '3molecular', '4', '5']
+
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--exp', type=int, default=3)
+    parser.add_argument('--exp', type=str, default='3', choices=EXP_CHOICES)
     parser.add_argument('--gpu', type=int, default=0, help='gpu')
     parser.add_argument('--input_dim', type=int, default=50)
     parser.add_argument('--batch_size', type=int, default=1024)
@@ -64,10 +72,32 @@ pretrain_dict_exp4 = {
     'Elliptic': elliptic
 }
 
+# Corpus of an earlier version of the paper; not used in the current version
 pretrain_dict_exp3 = {
     'Cora': cora,
     'ACM': acm,
     'DBLP': dblp
+}
+
+# Setting III: pre-train on one domain (same corpora as pretrain_exp3_cite / _social / _molecule in data_provider/__init__.py)
+pretrain_dict_exp3citation = {
+    'Cora': cora,
+    'ogbn-arxiv': ogbn_arxiv,
+    'ACM': acm,
+    'DBLP': dblp,
+}
+
+pretrain_dict_exp3social = {
+    'Reddit': reddit,
+    'Texas': texas,
+    'Wisconsin': wisconsin,
+    'Cornell': cornell,
+    'IMDB': imdb,
+}
+
+pretrain_dict_exp3molecular = {
+    'HIV': hiv,
+    'COX2': cox2,
 }
 
 pretrain_dict_exp1 = {
@@ -94,11 +124,14 @@ pretrain_dict_exp1 = {
 }
 
 PRETRAIN_DICT = {
-    1: pretrain_dict_exp1,
-    2: pretrain_dict_exp1,
-    3: pretrain_dict_exp3,
-    4: pretrain_dict_exp4,
-    5: pretrain_dict_exp4,
+    '1': pretrain_dict_exp1,
+    '2': pretrain_dict_exp1,
+    '3': pretrain_dict_exp3,
+    '3citation': pretrain_dict_exp3citation,
+    '3social': pretrain_dict_exp3social,
+    '3molecular': pretrain_dict_exp3molecular,
+    '4': pretrain_dict_exp4,
+    '5': pretrain_dict_exp4,  # Setting IV corpus with the FAGCN encoder
 }
 
 def multidata_sampler(data: Data, name, batch_size=16, num_workers=0):
@@ -320,7 +353,7 @@ def run(params):
     input_dim = params["input_dim"]
 
     # Initialize model
-    ModelClass = UniGraph2FAGCN if params['exp'] == 5 else UniGraph2
+    ModelClass = UniGraph2FAGCN if params['exp'] == '5' else UniGraph2
     model = ModelClass(
         input_dims={"text": input_dim},
         hidden_dim=input_dim,

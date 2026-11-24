@@ -1,7 +1,7 @@
 #!/bin/bash
 #nohup bash ./scripts/gft_pretrain.sh > gft_pretrain_run.log 2>&1 &
 
-EXP=1
+EXP=1  # 1 2 3citation 3social 3molecular 4 5 (5 = Setting IV with FAGCN; 3 = earlier-version corpus)
 GPU=3
 mkdir -p logs/gft
 timestamp=$(date +"%Y%m%d_%H%M%S")
