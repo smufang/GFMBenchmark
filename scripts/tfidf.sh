@@ -23,7 +23,7 @@ echo "Workdir: $PWD" | tee -a "$LOGFILE"
 echo "Log: $LOGFILE" | tee -a "$LOGFILE"
 
 # Run the python module in the background
-nohup /home/shenghua/anaconda3/envs/gfm/bin/python -m utils.tfidf >> "$LOGFILE" 2>&1 &
+nohup python -m utils.tfidf >> "$LOGFILE" 2>&1 &
 
 # Save the background process ID
 echo $! > "$PID_FILE"

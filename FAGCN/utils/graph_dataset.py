@@ -23,7 +23,7 @@ import tqdm
 parser = argparse.ArgumentParser("My DGI")
 
 parser.add_argument('--dataset', type=str, default="cornell", help='data')
-parser.add_argument('--dataset_root', type=str, default="/home/xingtong/WebKB_node_origin/data", help='path to save data')
+parser.add_argument('--dataset_root', type=str, default="./data", help='path to save data')
 parser.add_argument('--sample_num', type=int, default=20, help='number of negative samples')
 
 parser.add_argument('--aug_type', type=str, default="mask", help='aug type: mask or edge')
@@ -39,8 +39,8 @@ parser.add_argument('--k2', type=int, default=20, help='number of hop-3 neighbor
 
 args = parser.parse_args()
 
-if os.path.exists(f"/home/xingtong/WebKB_node_origin/data/fewshot_{args.dataset}_graph") == False:
-    os.makedirs(f"/home/xingtong/WebKB_node_origin/data/fewshot_{args.dataset}_graph")
+if os.path.exists(f"./data/fewshot_{args.dataset}_graph") == False:
+    os.makedirs(f"./data/fewshot_{args.dataset}_graph")
 
 
 import torch
@@ -71,8 +71,8 @@ features, adj, labels, sizes, masks = process.process_webkb(datasets.data, datas
 # features = torch.FloatTensor(features[np.newaxis])
 # features = features.cuda()
 labels = torch.FloatTensor(labels[np.newaxis]).cuda()
-# idx_test = torch.load(f"/home/xingtong/WebKB_node_origin/data/fewshot_{args.dataset}/test_idx.pt").type(torch.long).cuda()
-# test_lbls = torch.load(f"/home/xingtong/WebKB_node_origin/data/fewshot_{args.dataset}/test_labels.pt").type(torch.long).cuda()
+# idx_test = torch.load(f"./data/fewshot_{args.dataset}/test_idx.pt").type(torch.long).cuda()
+# test_lbls = torch.load(f"./data/fewshot_{args.dataset}/test_labels.pt").type(torch.long).cuda()
 if args.dataset == 'cornell':
     origin_adj = adj.todense().A.T
 else:
@@ -125,10 +125,10 @@ for x in tqdm.trange(len(neighbors_2hoplist)):
 
 for x in tqdm.trange(len(neighbors_3hoplist)):
     neighbors_3hoptensor[x][neighbors_3hoplist[x]] = 1
-with open(f"/home/xingtong/WebKB_node_origin/data/fewshot_{args.dataset}_graph/neighbors.csv", "w") as f:
+with open(f"./data/fewshot_{args.dataset}_graph/neighbors.csv", "w") as f:
     wr = csv.writer(f)
     wr.writerows(neighbors)
-with open(f"/home/xingtong/WebKB_node_origin/data/fewshot_{args.dataset}_graph/neighbors_2hops.csv", "w") as f:
+with open(f"./data/fewshot_{args.dataset}_graph/neighbors_2hops.csv", "w") as f:
     wr = csv.writer(f)
     wr.writerows(neighbors_2hops)
 from torch_geometric.data import Data
@@ -164,7 +164,7 @@ for x in tqdm.trange(origin_adj.shape[0]):
         data1 = Data(x=node_feature,edge_index=new_edge_index,y=graph_label,graph_idx=count,graph_nodes=[subgraph_nodes])
         graph_list1.append(data1)
         count +=1
-torch.save(graph_list1,f'/home/xingtong/WebKB_node_origin/data/fewshot_{args.dataset}_graph/graph_data1.pkl')
+torch.save(graph_list1,f'./data/fewshot_{args.dataset}_graph/graph_data1.pkl')
 
 
 '''
@@ -223,7 +223,7 @@ for num, (graph, graph1) in enumerate(tzip(graph_list,graph_list1)):
     # graph_datasets += negative_samples
     graph_datasets1 += negative_samples1
 
-torch.save(graph_datasets1,f'/home/xingtong/WebKB_node_origin/data/fewshot_{args.dataset}_graph/graph_data_augmented_{args.sample_num}_{args.aug_type}.pkl')
+torch.save(graph_datasets1,f'./data/fewshot_{args.dataset}_graph/graph_data_augmented_{args.sample_num}_{args.aug_type}.pkl')
 print('End')
 # gdl_graphs = dgl.batch(graph_datasets)
 # dataloader = DataLoader(graph_datasets1,batch_size=256)

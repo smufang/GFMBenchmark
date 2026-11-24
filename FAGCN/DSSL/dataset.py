@@ -310,7 +310,7 @@ def load_yelpchi_dataset():
 
 
 def load_tudataset(name):
-    data = torch.load(f"/home/xingtong/DSSL/data/{name}/data.pkl")
+    data = torch.load(f"./data/{name}/data.pkl")
     edge_index = data.edge_index
     node_feat = data.features
     label = data.labels
