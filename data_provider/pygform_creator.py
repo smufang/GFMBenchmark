@@ -861,9 +861,9 @@ class TFinance(InMemoryDataset):
 
     def download(self):
         raise FileNotFoundError(
-            "Failed to load T-Finance: Dataset not found."
-            "Please download 'tfinance' from 'https://dgraph.xinye.com/dataset#DGraph-Fin' "
-            "and move it to 'datasets/T-Finance/raw"
+            "Failed to load T-Finance: Dataset not found. "
+            "Please download 'tfinance' from 'https://github.com/squareRoot3/Rethinking-Anomaly-Detection' "
+            "and move it to 'datasets/T-Finance/raw'"
         )
 
     def process(self):
@@ -884,8 +884,8 @@ class TFinance(InMemoryDataset):
         Transfer DGL graph to PyG Data
         '''
         from dgl.data.utils import load_graphs
-        path = os.path.join(root, 'raw/tfinance')
-        graph, _ = load_graphs(path)
+        # `root` is already the raw file path (<dataset_root>/raw/tfinance) passed in by process()
+        graph, _ = load_graphs(root)
         graph = graph[0]
         graph.ndata['label'] = graph.ndata['label'].argmax(1)
         src, dst = graph.edges()
