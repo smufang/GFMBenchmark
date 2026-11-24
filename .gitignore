@@ -3,3 +3,13 @@ __pycache__/
 *.pyo
 logs/
 pids/
+
+# Data and checkpoints fetched by scripts/hf_download.sh (hosted on Hugging Face)
+/.cache/
+/datasets/
+/datasets_split/
+/checkpoints/
+/GFT/ckpts/
+/GCOPE/storage/
+/GraphPrompt/checkpoints/
+/UniGraph2/checkpoints/

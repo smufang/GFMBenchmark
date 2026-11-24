@@ -2,7 +2,7 @@
 
 A comprehensive benchmark for Graph Foundation Models (GFMs), covering pre-training, fine-tuning, and evaluation across diverse graph domains and tasks.
 
-[[arXiv]](https://arxiv.org/abs/2603.10033) | [[Hugging Face]](TBD) | [[Website]](https://xiexuanting.github.io/GFMBenchmark_Home/)
+[[arXiv]](https://arxiv.org/abs/2603.10033) | [[HF Datasets]](https://huggingface.co/datasets/smufang/GFM-datasets) | [[HF Checkpoints]](https://huggingface.co/smufang/GFM-checkpoints) | [[Website]](https://xiexuanting.github.io/GFMBenchmark_Home/)
 
 ---
 
@@ -45,28 +45,49 @@ Ensure PyTorch is compatible with your CUDA version.
 
 ## Data Preparation
 
-### Cloud Resources
+### Hugging Face
 
-**Download Hub: [https://smu.sg/GFMBenchmark](https://smu.sg/GFMBenchmark)**
+| Repository | Contents | Size |
+|------------|----------|------|
+| [**GFM-datasets**](https://huggingface.co/datasets/smufang/GFM-datasets) | `datasets/`: raw files, PyG-processed files, and model-specific caches (such as GCOPE `induced_graphs.pt` and GraphCLIP subgraph summaries) for all datasets except *Products*, *DGraph* and *Elliptic*; `datasets_split/`: pre-generated few-shot splits for every dataset | ~75 GB |
+| [**GFM-checkpoints**](https://huggingface.co/smufang/GFM-checkpoints) | Pre-trained weights of the evaluated models in each setting, laid out in the folders the code reads from | ~6.1 GB |
 
-| Source | Description | Recommendation |
-|--------|-------------|----------------|
-| **Full Datasets** | All raw datasets | For Reproduction |
-| **Lite Datasets** | Essential subset for quick testing + GCOPE `induced_graph` & GraphCLIP `subgraph summary` | For Quick Start |
-| **GFM-checkpoints** | Pre-trained model weights | For Evaluation |
-| **datasets_split.zip** | Pre-generated few-shot splits | Highly Recommended |
+### Option A: Download from Hugging Face (Recommended)
 
-> Generating GCOPE `induced_graph` and GraphCLIP summaries locally is time/memory-consuming. We strongly suggest downloading the **Lite Datasets** directly.
+Requires `pip install -U "huggingface_hub>=0.34"`. Files are written into the project root (`datasets/`, `datasets_split/`, `checkpoints/`, `GFT/ckpts/`, ...), and re-running a command resumes an interrupted download.
 
-### Option A: Automatic Download
+```bash
+bash scripts/hf_download.sh datasets                   # all hosted datasets + few-shot splits (~75 GB)
+bash scripts/hf_download.sh datasets Cora ACM Reddit   # selected datasets + all few-shot splits
+bash scripts/hf_download.sh splits                     # few-shot splits only (~0.3 GB)
+bash scripts/hf_download.sh checkpoints                # pre-trained checkpoints (~6.1 GB)
+```
+
+> Generating GCOPE `induced_graph` and GraphCLIP summaries locally is time/memory-consuming. We strongly suggest downloading them from Hugging Face instead.
+
+**Products, DGraph and Elliptic** are not hosted on Hugging Face, because their original licenses restrict redistribution; their few-shot splits are. To use them, get the raw files from the original providers:
+
+| Dataset | How to get it |
+|---------|---------------|
+| Products | Download `processed_data.pt` from the [LLaGA release](https://utexas.app.box.com/s/i7y03rzm40xt9bjbaj0dfdgxeyjx77gb/file/1441818321356) and put it in `datasets/Products/raw/` |
+| DGraph | Register at [dgraph.xinye.com](https://dgraph.xinye.com), download `DGraphFin.zip` and put it in `datasets/DGraph/raw/` |
+| Elliptic | Downloaded automatically by PyG the first time it is loaded (e.g., `bash scripts/data_download.sh`) |
+
+The loaders process these raw files on first use, and the model-specific caches are rebuilt automatically when missing. GraphCLIP pre-training on Elliptic also needs subgraph summaries, which are generated with `GraphCLIP/generate_summary_api.py` (OpenAI API).
+
+Zip archives are also available from our earlier download hub: [https://smu.sg/GFMBenchmark](https://smu.sg/GFMBenchmark).
+
+### Option B: Download from Original Sources
 
 ```bash
 bash scripts/data_download.sh
 ```
 
-### Option B: Generate Few-Shot Splits
+A few datasets (*Products*, *DGraph* and *T-Finance*) cannot be fetched automatically; the loader prints the download link and the folder to put the file in.
 
-If not using pre-processed splits from the cloud:
+### Option C: Generate Few-Shot Splits
+
+If not using the pre-generated splits:
 
 ```bash
 bash scripts/fewshot_generate.sh
@@ -87,6 +108,8 @@ bash scripts/samgpt_pretrain.sh
 # Downstream evaluation
 bash scripts/samgpt_downstream.sh
 ```
+
+To evaluate our released checkpoints without pre-training, run `bash scripts/hf_download.sh checkpoints` and then the `*_downstream.sh` scripts.
 
 Modify the scripts to adjust parameters such as `--model_id`, `--exp_id`, `--backbone`, `--task_name`, etc. See [`scripts/README.md`](scripts/README.md) for per-model usage, experiment settings, OOM tuning, and compatibility matrix.
 
